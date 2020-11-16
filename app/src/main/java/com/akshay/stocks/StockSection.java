@@ -67,10 +67,6 @@ final class StocksSection extends Section {
         headerHolder.title.setText(title);
     }
 
-//    public interface OnItemClickListener {
-//        void onItemClick(int position);
-//    }
-
     interface ClickListener {
         void onItemRootViewClicked(@NonNull final StocksSection section, final int itemAdapterPosition);
     }
