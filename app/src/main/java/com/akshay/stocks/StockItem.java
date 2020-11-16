@@ -1,13 +1,13 @@
 package com.akshay.stocks;
 
-public class StockListItem {
+public class StockItem {
     private String mTicker;
     private String mName;
     private String mShares;
     private double mLast;
     private double mChange;
 
-    public StockListItem(String name, String ticker) {
+    public StockItem(String name, String ticker) {
         mTicker = ticker;
         mName = name;
     }
