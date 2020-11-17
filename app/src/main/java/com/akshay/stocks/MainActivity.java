@@ -2,11 +2,14 @@ package com.akshay.stocks;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -26,9 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 public class MainActivity extends AppCompatActivity implements StocksSection.ClickListener {
 
+    private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "MainActivity";
     public static final String EXTRA_TICKER = "ticker";
     private List<StockItem> mPortfolioList;
@@ -61,11 +66,11 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         JSONArray json_temp_list = null;
         try {
             json_temp_list = new JSONArray(temp_list);
-            Log.d(TAG, "onCreate:JSONNN"+ json_temp_list.toString());
             sharedpreferences = getSharedPreferences(SHARED_PREFS,
                     MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedpreferences.edit();
             editor.putString(watchlist, json_temp_list.toString());
+            editor.putString(portfolio, json_temp_list.toString());
             editor.commit();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -74,55 +79,67 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         sectionAdapter = new SectionedRecyclerViewAdapter();
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
         mPortfolioList = new ArrayList<>();
         mWatchlist = new ArrayList<>();
         mRequestQueue = Volley.newRequestQueue(this);
 
         loadStockList();
-        parseStockList();
+        getStockList();
     }
 
     public void loadStockList() {
         sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         try {
-            watchlistTickers  =  new JSONArray(sharedpreferences.getString(watchlist, ""));
-            //portfolioTickers  =  new JSONArray(sharedpreferences.getString(portfolio, ""));
-//            Log.d(TAG, "loadStockList:"+ portfolioTickers);
+            watchlistTickers = new JSONArray(sharedpreferences.getString(watchlist, ""));
+            portfolioTickers = new JSONArray(sharedpreferences.getString(portfolio, ""));
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-//    public void removeFromWatchlist() {
-//        sharedpreferences = getSharedPreferences(SHARED_PREFS,
-//                MODE_PRIVATE);
-//
-//        try {
-//            JSONArray json = new JSONArray(your_array_list);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void removeFromWatchlist(int position) {
+        String ticker = mWatchlist.get(position).getTicker();
+        mWatchlist.remove(position);
+        sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        for(int i=0; i<watchlistTickers.length();i++){
 
-    private void parseStockList() {
-
-        //CHECK FOR EMPTY tickers
-        String params = "";
-        for (int i = 0; i < watchlistTickers.length(); i++) {
             try {
-                params = params + "&ticker=" + (String) watchlistTickers.get(i);
+                if(ticker.equals(watchlistTickers.get(i).toString())){
+                    watchlistTickers.remove(i);
+                    break;
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        String url = "http://8tsathna.us-east-1.elasticbeanstalk.com/api/stocklist?" + params.substring(1);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(watchlist, watchlistTickers.toString());
+        editor.commit();
+    }
 
-        JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+    private void getStockList() {
+        //CHECK FOR EMPTY tickers
+        if (portfolioTickers.length() == 0) {
+            portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
+            sectionAdapter.addSection(portfolioSection);
+            getWatchList();
+            return;
+        }
+
+        String portfolioListParams = "";
+        for (int i = 0; i < portfolioTickers.length(); i++) {
+            try {
+                portfolioListParams = portfolioListParams + "&ticker=" + (String) portfolioTickers.get(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String portfolioListUrl = SERVER + "/api/stocklist?" + portfolioListParams.substring(1);
+
+        JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, portfolioListUrl, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -135,9 +152,9 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                         mPortfolioList.add(new StockItem(name, ticker));
                     }
-
                     portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(portfolioSection);
+                    getWatchList();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -149,8 +166,28 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 error.printStackTrace();
             }
         });
+        mRequestQueue.add(request1);
+    }
 
-        JsonObjectRequest request2 = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+    public void getWatchList(){
+        //CHECK FOR EMPTY tickers
+        if (watchlistTickers.length() == 0) {
+            watchlistSection = new StocksSection("Watchlist", mWatchlist, MainActivity.this::onItemRootViewClicked);
+            sectionAdapter.addSection(watchlistSection);
+            mRecyclerView.setAdapter(sectionAdapter);
+            return;
+        }
+        String watchListParams = "";
+        for (int i = 0; i < watchlistTickers.length(); i++) {
+            try {
+                watchListParams = watchListParams + "&ticker=" + (String) watchlistTickers.get(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String watchListUrl = SERVER + "/api/stocklist?" + watchListParams.substring(1);
+
+        JsonObjectRequest request2 = new JsonObjectRequest(Request.Method.GET, watchListUrl, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -180,8 +217,6 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 error.printStackTrace();
             }
         });
-
-        mRequestQueue.add(request1);
         mRequestQueue.add(request2);
     }
 
@@ -194,4 +229,39 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
         startActivity(detailIntent);
     }
+
+    ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            try {
+                if (sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition()) == watchlistSection) {
+                    removeFromWatchlist(sectionAdapter.getPositionInSection(viewHolder.getAdapterPosition()));
+                }
+            } catch (IllegalArgumentException e){
+                e.printStackTrace();
+            }
+            sectionAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+            return 0.5f;
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red))
+                    .addActionIcon(R.drawable.ic_baseline_delete_24)
+                    .create()
+                    .decorate();
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
 }

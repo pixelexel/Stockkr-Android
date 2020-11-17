@@ -23,6 +23,8 @@ import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 
 
 public class DetailActivity extends AppCompatActivity {
+
+    private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
 
     private RequestQueue mRequestQueue;
@@ -52,7 +54,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void parseDetails(String ticker) {
-        String url = "http://8tsathna.us-east-1.elasticbeanstalk.com/api/details?ticker=" + ticker;
+        String url = SERVER + "/api/details?ticker=" + ticker;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override

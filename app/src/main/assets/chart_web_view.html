@@ -14,7 +14,7 @@
       let ticker = urlParams.get("ticker");
       ticker = ticker.toUpperCase();
       fetch(
-        "http://8tsathna.us-east-1.elasticbeanstalk.com/api/chart?ticker=" +
+        "http://8tsathna.us-east-1.elasticbeanstalk.com/api/charts2?ticker=" +
           ticker
       )
         .then((response) => response.json())
@@ -46,7 +46,7 @@
           }
           //console.log("volume: " + volume, ohlc);
 
-          Highcharts.stockChart("container", {
+          Highcharts.stockChart("chart", {
             rangeSelector: {
               selected: 2,
             },
@@ -140,6 +140,6 @@
     </script>
 </head>
 <body>
-<div id="container" ></div>
+<div id="chart" ></div>
 </body>
 </html>
