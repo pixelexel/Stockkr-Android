@@ -11,16 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/app_color"
-        tools:itemCount="14"
-        />
-
-<!--    <TextView-->
-<!--        android:id="@+id/empty_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:gravity="center"-->
-<!--        android:visibility="gone"-->
-<!--        android:text="@string/no_data_available" />-->
+        tools:itemCount="14" />
 
 </RelativeLayout>
 

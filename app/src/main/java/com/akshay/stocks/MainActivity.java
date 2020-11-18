@@ -2,17 +2,31 @@ package com.akshay.stocks;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -45,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     private SectionedRecyclerViewAdapter sectionAdapter;
     private StocksSection portfolioSection;
     private StocksSection watchlistSection;
-    //private ItemTouchHelper mTouchHelper;
 
     private JSONArray watchlistTickers;
     private JSONArray portfolioTickers;
@@ -55,7 +68,16 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     public static final String portfolio = "portfolio";
     public static final String watchlist = "watchlist";
 
-    //private string
+    //Search
+    private String[] searchStocks = new String[]{
+            "AAPL", "MSFT", "GOOGL"
+    };
+    private AutoSuggestAdapter autoSuggestAdapter;
+    private Handler handler;
+    private static final int TRIGGER_AUTO_COMPLETE = 100;
+    private static final long AUTO_COMPLETE_DELAY = 300;
+    private SearchView.SearchAutoComplete searchAutoComplete;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +107,109 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         mPortfolioList = new ArrayList<>();
         mWatchlist = new ArrayList<>();
         mRequestQueue = Volley.newRequestQueue(this);
-
+        autoSuggestAdapter = new AutoSuggestAdapter(this,
+                android.R.layout.simple_dropdown_item_1line);
         loadStockList();
         getStockList();
+    }
+
+    private void makeSearchCall(String text) {
+        Search.make(this, text, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                List<String> stringList = new ArrayList<>();
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject stock = array.getJSONObject(i);
+                        stringList.add(stock.getString("ticker") + " - " + stock.getString("name"));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                autoSuggestAdapter.setData(stringList);
+                autoSuggestAdapter.notifyDataSetChanged();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+    }
+
+    @SuppressLint("RestrictedApi")
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) item.getActionView();
+        searchAutoComplete = (SearchView.SearchAutoComplete) searchView.findViewById(R.id.search_src_text);
+        //searchAutoComplete.setTextColor(getResources().getColor(R.color.example_color));
+        searchAutoComplete.setDropDownBackgroundResource(R.color.white);
+        searchAutoComplete.setThreshold(3);
+        searchAutoComplete.setAdapter(autoSuggestAdapter);
+
+        searchAutoComplete.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int
+                    count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before,
+                                      int count) {
+                handler.removeMessages(TRIGGER_AUTO_COMPLETE);
+                handler.sendEmptyMessageDelayed(TRIGGER_AUTO_COMPLETE,
+                        AUTO_COMPLETE_DELAY);
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        handler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (msg.what == TRIGGER_AUTO_COMPLETE) {
+                    if (!TextUtils.isEmpty(searchAutoComplete.getText())) {
+                        makeSearchCall(searchAutoComplete.getText().toString());
+                    }
+                }
+                return false;
+            }
+        });
+
+        searchAutoComplete.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int itemIndex, long id) {
+                String queryString=(String)adapterView.getItemAtPosition(itemIndex);
+                searchAutoComplete.setText("" + queryString);
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                loadDetails(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public void loadDetails(String query) {
+        int index = query.indexOf("-");
+        if (index != -1)
+        {
+            Intent detailIntent = new Intent(this, DetailActivity.class);
+            detailIntent.putExtra(EXTRA_TICKER, query.substring(0,index-1));
+            startActivity(detailIntent);
+        }
     }
 
     public void loadStockList() {
@@ -312,9 +434,6 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 StocksSection toSection = (StocksSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
-
-                Log.d(TAG, "onMove: " + " FROM "  + fromPosition + " TO " + toPosition);
-                Log.d(TAG, "onMove: " + fromSection + toSection);
                 if (fromSection.equals(toSection)) {
                     moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition));
                     sectionAdapter.notifyItemMoved(fromPosition,toPosition);
