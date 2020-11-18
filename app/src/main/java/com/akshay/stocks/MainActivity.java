@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 watchlistTickers.put(mWatchlist.get(i).getTicker());
             }
             editor.putString(watchlist, watchlistTickers.toString());
-            Log.d(TAG, "moveInList: " + watchlistTickers);
+           //Log.d(TAG, "moveInList: " + watchlistTickers);
         } else {
             StockItem stock = mPortfolioList.get(fromPosition);
             mPortfolioList.remove(stock);
@@ -293,14 +293,14 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
             }
             editor.putString(portfolio, portfolioTickers.toString());
         }
-        sectionAdapter.notifyDataSetChanged();
+
         editor.commit();
     }
 
     ItemTouchHelper.Callback itemTouchHelperCallback = new ItemTouchHelper.Callback() {
         @Override
         public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-            final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+            final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END;
             final int swipeFlags = ItemTouchHelper.LEFT;
             return makeMovementFlags(dragFlags, swipeFlags);
         }
@@ -310,10 +310,14 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
             try {
                 StocksSection fromSection = (StocksSection) sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition());
                 StocksSection toSection = (StocksSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
-                int fromPosition = sectionAdapter.getPositionInSection(viewHolder.getAdapterPosition());
-                int toPosition = sectionAdapter.getPositionInSection(target.getAdapterPosition());
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+
+                Log.d(TAG, "onMove: " + " FROM "  + fromPosition + " TO " + toPosition);
+                Log.d(TAG, "onMove: " + fromSection + toSection);
                 if (fromSection.equals(toSection)) {
-                    moveInList(fromSection.title, fromPosition, toPosition);
+                    moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition));
+                    sectionAdapter.notifyItemMoved(fromPosition,toPosition);
                 }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
