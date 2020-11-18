@@ -12,7 +12,7 @@ import java.util.List;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 
-final class StocksSection extends Section {
+final class StocksSection extends Section{
 
     final String title;
     final List<StockItem> list;

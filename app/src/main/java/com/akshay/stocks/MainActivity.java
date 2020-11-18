@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     private SectionedRecyclerViewAdapter sectionAdapter;
     private StocksSection portfolioSection;
     private StocksSection watchlistSection;
+    //private ItemTouchHelper mTouchHelper;
 
     private JSONArray watchlistTickers;
     private JSONArray portfolioTickers;
@@ -62,19 +64,19 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         setContentView(R.layout.activity_main);
 
         //TEMP
-        String[] temp_list = {"NVDA", "GOOGL", "AAPL", "MSFT"};
-        JSONArray json_temp_list = null;
-        try {
-            json_temp_list = new JSONArray(temp_list);
-            sharedpreferences = getSharedPreferences(SHARED_PREFS,
-                    MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedpreferences.edit();
-            editor.putString(watchlist, json_temp_list.toString());
-            editor.putString(portfolio, json_temp_list.toString());
-            editor.commit();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        String[] temp_list = {"NVDA", "GOOGL", "AAPL", "MSFT"};
+//        JSONArray json_temp_list = null;
+//        try {
+//            json_temp_list = new JSONArray(temp_list);
+//            sharedpreferences = getSharedPreferences(SHARED_PREFS,
+//                    MODE_PRIVATE);
+//            SharedPreferences.Editor editor = sharedpreferences.edit();
+//            editor.putString(watchlist, json_temp_list.toString());
+//            editor.putString(portfolio, json_temp_list.toString());
+//            editor.commit();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
         sectionAdapter = new SectionedRecyclerViewAdapter();
         mRecyclerView = findViewById(R.id.recycler_view);
@@ -99,29 +101,41 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         }
     }
 
-    public void removeFromWatchlist(int position) {
-        String ticker = mWatchlist.get(position).getTicker();
-        mWatchlist.remove(position);
-        sharedpreferences = getSharedPreferences(SHARED_PREFS,
-                MODE_PRIVATE);
-        for(int i=0; i<watchlistTickers.length();i++){
-
-            try {
-                if(ticker.equals(watchlistTickers.get(i).toString())){
-                    watchlistTickers.remove(i);
-                    break;
+    void sortPortfolio() {
+        for(int i=0;i<portfolioTickers.length();i++){
+            for(int j =0; j<mPortfolioList.size(); j++){
+                try {
+                    if(mPortfolioList.get(j).getTicker().equals(portfolioTickers.get(i))){
+                        StockItem stock = mPortfolioList.get(j);
+                        mPortfolioList.remove(stock);
+                        mPortfolioList.add(i, stock);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
-        SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putString(watchlist, watchlistTickers.toString());
-        editor.commit();
+    }
+
+    void sortWatchlist() {
+        for(int i=0;i<watchlistTickers.length();i++){
+            for(int j =0; j<mWatchlist.size(); j++){
+                try {
+                    if(mWatchlist.get(j).getTicker().equals(watchlistTickers.get(i))){
+                        StockItem stock = mWatchlist.get(j);
+                        mWatchlist.remove(stock);
+                        mWatchlist.add(i, stock);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void getStockList() {
         //CHECK FOR EMPTY tickers
+        Log.d(TAG, "getStockList: " + watchlistTickers);
         if (portfolioTickers.length() == 0) {
             portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(portfolioSection);
@@ -152,8 +166,10 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                         mPortfolioList.add(new StockItem(name, ticker));
                     }
+                    sortPortfolio();
                     portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(portfolioSection);
+
                     getWatchList();
 
                 } catch (JSONException e) {
@@ -169,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         mRequestQueue.add(request1);
     }
 
-    public void getWatchList(){
+    public void getWatchList() {
         //CHECK FOR EMPTY tickers
         if (watchlistTickers.length() == 0) {
             watchlistSection = new StocksSection("Watchlist", mWatchlist, MainActivity.this::onItemRootViewClicked);
@@ -178,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
             return;
         }
         String watchListParams = "";
+        Log.d(TAG, "getWatchList: " + watchlistTickers);
         for (int i = 0; i < watchlistTickers.length(); i++) {
             try {
                 watchListParams = watchListParams + "&ticker=" + (String) watchlistTickers.get(i);
@@ -201,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                         mWatchlist.add(new StockItem(name, ticker));
                     }
-
+                    sortWatchlist();
                     watchlistSection = new StocksSection("Watchlist", mWatchlist, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(watchlistSection);
 
@@ -230,9 +247,77 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         startActivity(detailIntent);
     }
 
-    ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    public void removeFromWatchlist(int position) {
+        String ticker = mWatchlist.get(position).getTicker();
+        mWatchlist.remove(position);
+        for (int i = 0; i < watchlistTickers.length(); i++) {
+
+            try {
+                if (ticker.equals(watchlistTickers.get(i).toString())) {
+                    watchlistTickers.remove(i);
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(watchlist, watchlistTickers.toString());
+        editor.commit();
+    }
+
+    public void moveInList(String sectionTitle, int fromPosition, int toPosition) {
+        sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+
+        if (sectionTitle == "Watchlist") {
+            StockItem stock = mWatchlist.get(fromPosition);
+            mWatchlist.remove(stock);
+            mWatchlist.add(toPosition, stock);
+            watchlistTickers = new JSONArray();
+            for(int i=0;i<mWatchlist.size();i++) {
+                watchlistTickers.put(mWatchlist.get(i).getTicker());
+            }
+            editor.putString(watchlist, watchlistTickers.toString());
+            Log.d(TAG, "moveInList: " + watchlistTickers);
+        } else {
+            StockItem stock = mPortfolioList.get(fromPosition);
+            mPortfolioList.remove(stock);
+            mPortfolioList.add(toPosition, stock);
+            portfolioTickers = new JSONArray();
+            for(int i=0;i<mPortfolioList.size();i++) {
+                portfolioTickers.put(mPortfolioList.get(i).getTicker());
+            }
+            editor.putString(portfolio, portfolioTickers.toString());
+        }
+        sectionAdapter.notifyDataSetChanged();
+        editor.commit();
+    }
+
+    ItemTouchHelper.Callback itemTouchHelperCallback = new ItemTouchHelper.Callback() {
+        @Override
+        public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+            final int swipeFlags = ItemTouchHelper.LEFT;
+            return makeMovementFlags(dragFlags, swipeFlags);
+        }
+
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            try {
+                StocksSection fromSection = (StocksSection) sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition());
+                StocksSection toSection = (StocksSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
+                int fromPosition = sectionAdapter.getPositionInSection(viewHolder.getAdapterPosition());
+                int toPosition = sectionAdapter.getPositionInSection(target.getAdapterPosition());
+                if (fromSection.equals(toSection)) {
+                    moveInList(fromSection.title, fromPosition, toPosition);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
             return false;
         }
 
@@ -242,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 if (sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition()) == watchlistSection) {
                     removeFromWatchlist(sectionAdapter.getPositionInSection(viewHolder.getAdapterPosition()));
                 }
-            } catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
             sectionAdapter.notifyDataSetChanged();
