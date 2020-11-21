@@ -69,9 +69,6 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     public static final String watchlist = "watchlist";
 
     //Search
-    private String[] searchStocks = new String[]{
-            "AAPL", "MSFT", "GOOGL"
-    };
     private AutoSuggestAdapter autoSuggestAdapter;
     private Handler handler;
     private static final int TRIGGER_AUTO_COMPLETE = 100;
