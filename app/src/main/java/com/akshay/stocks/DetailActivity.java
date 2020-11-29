@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +29,10 @@ import org.json.JSONObject;
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
 import static com.akshay.stocks.MainActivity.watchlist;
+import static java.lang.Integer.parseInt;
 
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener {
 
     private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
@@ -40,12 +43,20 @@ public class DetailActivity extends AppCompatActivity {
     private String ticker;
     private boolean favorite = false;
     private JSONArray watchlistTickers;
+    private Button tradeButton;
+    private TradeDialog tradeDialog;
+    private StockItem stockItem;
+    private SuccessDialog successDialog;
+
+    //Details
+    private TextView textViewSharesOwned;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
 
         Intent intent = getIntent();
         ticker = intent.getStringExtra(EXTRA_TICKER);
@@ -66,6 +77,57 @@ public class DetailActivity extends AppCompatActivity {
         //back
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
+
+        //Trade
+        SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        textViewSharesOwned  = findViewById(R.id.text_view_shares_owned);
+        textViewSharesOwned.setText("Shares Owned: " + sharedpreferences.getInt(ticker, 0));
+        tradeButton = (Button) findViewById(R.id.trade_button);
+        tradeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                openTradeDialog();
+            }
+            });
+    }
+
+    private void openTradeDialog() {
+        tradeDialog = new TradeDialog(stockItem);
+
+        tradeDialog.show(getSupportFragmentManager(), "trade dialog");
+    }
+
+    @Override
+    public void tradeStocks(boolean option, String shares) {
+        SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        int existingShares = sharedpreferences.getInt(ticker, 0);
+        int deltaShares = Integer.parseInt(shares);
+        if(option){
+            existingShares +=  deltaShares ;
+        } else {
+            existingShares -= deltaShares;
+        }
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+
+        if(existingShares <= 0){
+            editor.remove(ticker);
+        } else {
+            editor.putInt(ticker, existingShares);
+        }
+
+        editor.commit();
+        textViewSharesOwned.setText("Shares Owned: " + existingShares);
+        tradeDialog.dismiss();
+
+        successDialog = new SuccessDialog(ticker, option, deltaShares);
+        successDialog.show(getSupportFragmentManager(), "trade dialog");
+    }
+
+    @Override
+    public void closeDialog() {
+        successDialog.dismiss();
     }
 
     private void loadData(String ticker) {
@@ -82,7 +144,6 @@ public class DetailActivity extends AppCompatActivity {
                 }
 
             }
-            //portfolioTickers = new JSONArray(sharedpreferences.getString(portfolio, ""));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -155,7 +216,8 @@ public class DetailActivity extends AppCompatActivity {
             public void onResponse(JSONObject stock) {
                 try {
                     String name = stock.getString("name");
-                    Log.d(TAG, "onResponse: "+stock);
+                    Double last = Double.parseDouble(stock.getString("last"));
+                    stockItem = new StockItem(ticker, name, last);
                     textViewName.setText(name);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -170,4 +232,7 @@ public class DetailActivity extends AppCompatActivity {
 
         mRequestQueue.add(request);
     }
+
+
+
 }

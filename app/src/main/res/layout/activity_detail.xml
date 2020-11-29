@@ -11,6 +11,8 @@
         android:id="@+id/text_view_ticker_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:text="Stock Ticker"
         android:textColor="@color/black"
         android:textSize="20sp" />
@@ -20,7 +22,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_view_ticker_detail"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="4dp"
         android:text="Stock Name" />
+
+    <TextView
+        android:id="@+id/text_view_shares_owned"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="316dp"
+        android:text="Shares Owned: 0" />
 
     <WebView
         android:id="@+id/chart_web_view"
@@ -32,6 +47,7 @@
         android:layout_marginTop="53dp" />
 
     <Button
+        android:id="@+id/trade_button"
         android:layout_width="159dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"

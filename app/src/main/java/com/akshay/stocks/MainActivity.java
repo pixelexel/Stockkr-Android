@@ -282,8 +282,9 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                         String name = stock.getString("name");
                         String ticker = stock.getString("ticker");
+                        Double last = Double.parseDouble(stock.getString("last"));
 
-                        mPortfolioList.add(new StockItem(name, ticker));
+                        mPortfolioList.add(new StockItem(name, ticker, last));
                     }
                     sortPortfolio();
                     portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
@@ -334,8 +335,10 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                         String name = stock.getString("name");
                         String ticker = stock.getString("ticker");
+                        Double last = Double.parseDouble(stock.getString("last"));
 
-                        mWatchlist.add(new StockItem(name, ticker));
+
+                        mWatchlist.add(new StockItem(name, ticker, last));
                     }
                     sortWatchlist();
                     watchlistSection = new StocksSection("Watchlist", mWatchlist, MainActivity.this::onItemRootViewClicked);
