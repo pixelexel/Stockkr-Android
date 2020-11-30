@@ -107,7 +107,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         recyclerViewNews = findViewById(R.id.recycler_view_news);
         recyclerViewNews.setHasFixedSize(true);
         recyclerViewNews.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewNews.setNestedScrollingEnabled(false);
+//        recyclerViewNews.setNestedScrollingEnabled(true);
 
         newsItemArrayList = new ArrayList<>();
 
