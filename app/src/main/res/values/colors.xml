@@ -11,5 +11,7 @@
     <color name="touch">#828282</color>
     <color name="red">#B80F0A</color>
     <color name="green">#38A467</color>
+    <color name="splash">#F2F2F4</color>
+
 
 </resources>

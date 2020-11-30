@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     public static final String SHARED_PREFS = "sharedPrefs";
     public static final String portfolio = "portfolio";
     public static final String watchlist = "watchlist";
+    public static final String init = "init";
 
     //Search
     private AutoSuggestAdapter autoSuggestAdapter;
@@ -82,20 +85,22 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //TEMP
-//        String[] temp_list = {"NVDA", "GOOGL", "AAPL", "MSFT"};
-//        JSONArray json_temp_list = null;
-//        try {
-//            json_temp_list = new JSONArray(temp_list);
-//            sharedpreferences = getSharedPreferences(SHARED_PREFS,
-//                    MODE_PRIVATE);
-//            SharedPreferences.Editor editor = sharedpreferences.edit();
-//            editor.putString(watchlist, json_temp_list.toString());
-//            editor.putString(portfolio, json_temp_list.toString());
-//            editor.commit();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+        sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        if(!sharedpreferences.getBoolean(init, false)){
+            editor.putBoolean(init, true).apply();
+            String[] temp_list = {};
+            JSONArray json_temp_list = null;
+            try {
+                json_temp_list = new JSONArray(temp_list);
+                editor.putString(watchlist, json_temp_list.toString());
+                editor.putString(portfolio, json_temp_list.toString());
+                editor.commit();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
 
         sectionAdapter = new SectionedRecyclerViewAdapter();
         mRecyclerView = findViewById(R.id.recycler_view);
@@ -213,8 +218,8 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         try {
-            watchlistTickers = new JSONArray(sharedpreferences.getString(watchlist, ""));
-            portfolioTickers = new JSONArray(sharedpreferences.getString(portfolio, ""));
+            watchlistTickers = new JSONArray(sharedpreferences.getString(watchlist, null));
+            portfolioTickers = new JSONArray(sharedpreferences.getString(portfolio, null));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -254,7 +259,6 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
     private void getStockList() {
         //CHECK FOR EMPTY tickers
-        Log.d(TAG, "getStockList: " + watchlistTickers);
         if (portfolioTickers.length() == 0) {
             portfolioSection = new StocksSection("Portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(portfolioSection);

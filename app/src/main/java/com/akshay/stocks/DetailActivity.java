@@ -32,6 +32,7 @@ import java.util.ArrayList;
 
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
+import static com.akshay.stocks.MainActivity.portfolio;
 import static com.akshay.stocks.MainActivity.watchlist;
 import static java.lang.Integer.parseInt;
 
@@ -47,6 +48,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     private String ticker;
     private boolean favorite = false;
     private JSONArray watchlistTickers;
+    private JSONArray portfolioTickers;
     private Button tradeButton;
     private TradeDialog tradeDialog;
     private StockItem stockItem;
@@ -162,6 +164,9 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         int existingShares = sharedpreferences.getInt(ticker, 0);
+        if(existingShares == 0){
+            managePortfolio(true);
+        }
         int deltaShares = Integer.parseInt(shares);
         if (option) {
             existingShares += deltaShares;
@@ -172,6 +177,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
 
         if (existingShares <= 0) {
             editor.remove(ticker);
+            managePortfolio(false);
         } else {
             editor.putInt(ticker, existingShares);
         }
@@ -182,6 +188,35 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
 
         successDialog = new SuccessDialog(ticker, option, deltaShares);
         successDialog.show(getSupportFragmentManager(), "trade dialog");
+    }
+
+    private void managePortfolio(boolean b) {
+        SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                MODE_PRIVATE);
+
+        try {
+            portfolioTickers = new JSONArray(sharedpreferences.getString(portfolio, ""));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (b) {
+            portfolioTickers.put(ticker);
+        } else {
+            for (int i = 0; i < portfolioTickers.length(); i++) {
+                try {
+                    if (ticker.equals(portfolioTickers.get(i).toString())) {
+                        portfolioTickers.remove(i);
+                        break;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(portfolio, portfolioTickers.toString());
+        Log.d(TAG, "portfolio: " + portfolioTickers.toString());
+        editor.commit();
     }
 
     @Override
