@@ -2,6 +2,8 @@ package com.akshay.stocks;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +27,8 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
@@ -51,6 +55,12 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     //Details
     private TextView textViewSharesOwned;
 
+    //News
+    private RecyclerView recyclerViewNews;
+    private NewsAdapter newsAdapter;
+    private ArrayList<NewsItem> newsItemArrayList;
+    private RequestQueue requestQueue;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +72,8 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         ticker = intent.getStringExtra(EXTRA_TICKER);
         loadData(ticker);
 
-        TextView textViewTicker  = findViewById(R.id.text_view_ticker_detail);
-        textViewName  = findViewById(R.id.text_view_name_detail);
+        TextView textViewTicker = findViewById(R.id.text_view_ticker_detail);
+        textViewName = findViewById(R.id.text_view_name_detail);
         chart = (WebView) findViewById(R.id.chart_web_view);
         chart.loadUrl("file:///android_asset/chart_web_view.html?ticker=" + ticker);
         chart.getSettings().setJavaScriptEnabled(true);
@@ -81,15 +91,64 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         //Trade
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
-        textViewSharesOwned  = findViewById(R.id.text_view_shares_owned);
+        textViewSharesOwned = findViewById(R.id.text_view_shares_owned);
         textViewSharesOwned.setText("Shares Owned: " + sharedpreferences.getInt(ticker, 0));
         tradeButton = (Button) findViewById(R.id.trade_button);
         tradeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 openTradeDialog();
             }
-            });
+        });
+
+        //News
+        recyclerViewNews = findViewById(R.id.recycler_view_news);
+        recyclerViewNews.setHasFixedSize(true);
+        recyclerViewNews.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewNews.setNestedScrollingEnabled(false);
+
+        newsItemArrayList = new ArrayList<>();
+
+        requestQueue = Volley.newRequestQueue(this);
+        parseNews();
+    }
+
+    private void parseNews() {
+        String url = "http://8tsathna.us-east-1.elasticbeanstalk.com/api/news?ticker=" + ticker;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray jsonArray = response.getJSONArray("articles");
+
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject article = jsonArray.getJSONObject(i);
+
+                                String website = article.getJSONObject("source").getString("name");
+                                String title = article.getString("title");
+                                String imageUrl = article.getString("urlToImage");
+                                newsItemArrayList.add(new NewsItem(imageUrl, website, title));
+                            }
+
+                            newsAdapter = new NewsAdapter(DetailActivity.this, newsItemArrayList);
+                            recyclerViewNews.setAdapter(newsAdapter);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+
+        requestQueue.add(request);
     }
 
     private void openTradeDialog() {
@@ -104,14 +163,14 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 MODE_PRIVATE);
         int existingShares = sharedpreferences.getInt(ticker, 0);
         int deltaShares = Integer.parseInt(shares);
-        if(option){
-            existingShares +=  deltaShares ;
+        if (option) {
+            existingShares += deltaShares;
         } else {
             existingShares -= deltaShares;
         }
         SharedPreferences.Editor editor = sharedpreferences.edit();
 
-        if(existingShares <= 0){
+        if (existingShares <= 0) {
             editor.remove(ticker);
         } else {
             editor.putInt(ticker, existingShares);
@@ -137,7 +196,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
             watchlistTickers = new JSONArray(sharedpreferences.getString(watchlist, ""));
             for (int i = 0; i < watchlistTickers.length(); i++) {
                 String list_ticker = (String) watchlistTickers.get(i);
-                if(ticker.equals(list_ticker)){
+                if (ticker.equals(list_ticker)) {
                     favorite = true;
                     Log.d(TAG, "loadData: Found");
                     invalidateOptionsMenu();
@@ -152,38 +211,38 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.detail_menu, menu);
-        if(favorite == true){
-            menu.findItem(R.id.action_star_border).setVisible(false);
+        Log.d(TAG, "onCreateOptionsMenu: " + favorite);
+        if (favorite == true) {
+            menu.findItem(R.id.action_border).setVisible(false);
             menu.findItem(R.id.action_star).setVisible(true);
         } else {
+            menu.findItem(R.id.action_border).setVisible(true);
             menu.findItem(R.id.action_star).setVisible(false);
-            menu.findItem(R.id.action_star_border).setVisible(true);
         }
-        manageWatchlist(favorite);
         return true;
     }
 
     private void manageWatchlist(boolean fav) {
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
-        if(!fav){
+        if (fav) {
+            watchlistTickers.put(ticker);
+        } else {
             for (int i = 0; i < watchlistTickers.length(); i++) {
                 try {
                     if (ticker.equals(watchlistTickers.get(i).toString())) {
-                        Log.d(TAG, "manageWatchlist: remove");
                         watchlistTickers.remove(i);
+                        Log.d(TAG, "manageWatchlist: remove" + watchlistTickers);
                         break;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
-        } else {
-            watchlistTickers.put(ticker);
         }
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putString(watchlist, watchlistTickers.toString());
+        Log.d(TAG, "manageWatchlist: " + watchlistTickers.toString());
         editor.commit();
     }
 
@@ -195,14 +254,18 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 finish();
                 onBackPressed();
                 return true;
-            case R.id.action_star_border:
+            case R.id.action_border:
                 Toast.makeText(this, ticker + " added to favorites", Toast.LENGTH_LONG).show();
                 favorite = true;
                 invalidateOptionsMenu();
+                manageWatchlist(favorite);
+                return true;
             case R.id.action_star:
                 Toast.makeText(this, ticker + " removed from favorites", Toast.LENGTH_LONG).show();
                 favorite = false;
                 invalidateOptionsMenu();
+                manageWatchlist(favorite);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -232,7 +295,6 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
 
         mRequestQueue.add(request);
     }
-
 
 
 }

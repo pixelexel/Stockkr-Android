@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_star_border"
+        android:id="@+id/action_border"
         app:showAsAction="always|collapseActionView"
         android:icon="@drawable/ic_baseline_star_border_24"
         android:title="Star_Border" />

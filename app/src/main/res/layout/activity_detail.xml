@@ -59,4 +59,16 @@
         android:background="@drawable/rounded_buttons"
         />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_news"
+        android:layout_width="match_parent"
+        android:layout_height="275dp"
+        android:layout_below="@+id/text_view_shares_owned"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="121dp"
+        android:layout_marginEnd="0dp" />
+
 </RelativeLayout>
