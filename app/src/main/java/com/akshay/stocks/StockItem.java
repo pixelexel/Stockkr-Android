@@ -7,10 +7,11 @@ public class StockItem {
     private double mLast;
     private double mChange;
 
-    public StockItem(String name, String ticker, Double last) {
+    public StockItem(String name, String ticker, Double last, Double change) {
         mTicker = ticker;
         mName = name;
         mLast = last;
+        mChange = change;
     }
     public Double getLast() {
         return mLast;
@@ -23,5 +24,7 @@ public class StockItem {
     public String getName(){
         return mName;
     }
+
+    public Double getChange(){return mChange;}
 
 }

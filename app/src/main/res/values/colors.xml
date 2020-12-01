@@ -7,11 +7,13 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="app_color">#F5F4F5</color>
+    <color name="app_color">#F4F2F4</color>
     <color name="touch">#828282</color>
     <color name="red">#B80F0A</color>
     <color name="green">#38A467</color>
     <color name="splash">#F2F2F4</color>
+    <color name="header">#E1E3E5</color>
+    <color name="date">#7B797C</color>
 
 
 </resources>

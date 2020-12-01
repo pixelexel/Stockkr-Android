@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardBackgroundColor="@color/app_color">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,6 +25,31 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/text_view_ticker"
             android:text="name" />
+
+        <TextView
+            android:id="@+id/text_view_last"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_view_ticker"
+            android:text="last" />
+
+        <TextView
+            android:id="@+id/text_view_change"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_view_ticker"
+            android:text="change" />
+
+        <ImageView
+            android:id="@+id/image_view_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/image_view_carrot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
     </LinearLayout>
 
 

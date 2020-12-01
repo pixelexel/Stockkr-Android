@@ -341,7 +341,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 try {
                     String name = stock.getString("name");
                     Double last = Double.parseDouble(stock.getString("last"));
-                    stockItem = new StockItem(ticker, name, last);
+                    stockItem = new StockItem(ticker, name, last, 0.0);
                     textViewName.setText(name);
                 } catch (JSONException e) {
                     e.printStackTrace();

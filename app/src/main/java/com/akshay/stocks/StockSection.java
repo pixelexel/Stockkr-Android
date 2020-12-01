@@ -1,5 +1,6 @@
 package com.akshay.stocks;
 
+import android.graphics.Color;
 import android.view.View;
 
 
@@ -47,8 +48,22 @@ final class StocksSection extends Section{
 
         final StockItem stock = list.get(position);
 
+//        if(stock.getTicker().equals("worth")){
+//            final NetWorthViewHolder netWorthViewHolder = (NetWorthViewHolder) holder;
+//        }
+
         itemHolder.mTextViewTicker.setText(stock.getTicker());
         itemHolder.mTextViewName.setText(stock.getName());
+        itemHolder.mTextViewLast.setText(String.valueOf(stock.getLast()));
+        itemHolder.mTextViewChange.setText(String.format("%.2f", Math.abs(stock.getChange())));
+
+        if(stock.getChange() > 0){
+            itemHolder.imageViewArrow.setImageResource(R.drawable.ic_twotone_trending_up_24);
+            itemHolder.mTextViewChange.setTextColor(Color.parseColor("#319C5E"));
+        } else {
+            itemHolder.imageViewArrow.setImageResource(R.drawable.ic_baseline_trending_down_24);
+            itemHolder.mTextViewChange.setTextColor(Color.parseColor("#9B4049"));
+        }
 
         itemHolder.rootView.setOnClickListener(v ->
                 clickListener.onItemRootViewClicked(this, itemHolder.getAdapterPosition())

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="50dp"
     android:paddingBottom="5dp"
-    android:paddingTop="5dp">
+    android:paddingTop="5dp"
+    android:background="@color/header">
 
     <TextView
         android:id="@+id/list_title"
@@ -17,11 +18,12 @@
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
         android:textStyle="bold"
+        android:textColor="@color/black"
         tools:text="Title test text"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/white"/>
+        android:background="@color/app_color"/>
 </RelativeLayout>
