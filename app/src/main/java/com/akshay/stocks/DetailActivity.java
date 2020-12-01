@@ -28,7 +28,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
@@ -37,7 +41,7 @@ import static com.akshay.stocks.MainActivity.watchlist;
 import static java.lang.Integer.parseInt;
 
 
-public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener {
+public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener, NewsDialog.NewsDialogListener, NewsAdapter.onNewsItemClickListener{
 
     private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
@@ -62,6 +66,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     private NewsAdapter newsAdapter;
     private ArrayList<NewsItem> newsItemArrayList;
     private RequestQueue requestQueue;
+    private NewsDialog newsDialog;
 
 
     @Override
@@ -132,11 +137,15 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                                 String website = article.getJSONObject("source").getString("name");
                                 String title = article.getString("title");
                                 String imageUrl = article.getString("urlToImage");
-                                newsItemArrayList.add(new NewsItem(imageUrl, website, title));
+                                String url = article.getString("url");
+                                String publishedAt = article.getString("publishedAt");
+                                String time = getTimeDiff(publishedAt);
+                                newsItemArrayList.add(new NewsItem(imageUrl, website, title, url, time));
                             }
 
                             newsAdapter = new NewsAdapter(DetailActivity.this, newsItemArrayList);
                             recyclerViewNews.setAdapter(newsAdapter);
+                            newsAdapter.setOnItemClickListener(DetailActivity.this);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -151,6 +160,28 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         });
 
         requestQueue.add(request);
+    }
+
+    private String getTimeDiff(String publishedAt) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        long currentTimestamp = Instant.now().toEpochMilli();
+        Date p = null;
+        try {
+            p = sdf.parse(publishedAt);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        long diff = currentTimestamp - p.getTime();
+        long diffMinutes = diff / (60 * 1000) % 60;
+        if(diffMinutes < 60){
+            return diffMinutes + " minutes ago";
+        }
+        long diffHours = diff / (60 * 60 * 1000);
+        if(diffHours < 24){
+            return diffHours + " hours ago";
+        }
+        int diffInDays = (int) diff / (1000 * 60 * 60 * 24);
+        return diffInDays + " days ago";
     }
 
     private void openTradeDialog() {
@@ -217,11 +248,6 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         editor.putString(portfolio, portfolioTickers.toString());
         Log.d(TAG, "portfolio: " + portfolioTickers.toString());
         editor.commit();
-    }
-
-    @Override
-    public void closeDialog() {
-        successDialog.dismiss();
     }
 
     private void loadData(String ticker) {
@@ -331,5 +357,23 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         mRequestQueue.add(request);
     }
 
+    @Override
+    public void onNewsItemClick(int position) {
+        NewsItem newsItem = newsItemArrayList.get(position);
+
+        newsDialog = new NewsDialog(newsItem.getTitle(),newsItem.getUrl(),newsItem.getImageUrl());
+
+        newsDialog.show(getSupportFragmentManager(), "news dialog");
+    }
+
+    @Override
+    public void closeDialog() {
+        successDialog.dismiss();
+    }
+
+    @Override
+    public void closeNewsDialog() {
+        newsDialog.dismiss();
+    }
 
 }

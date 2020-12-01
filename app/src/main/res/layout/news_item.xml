@@ -12,12 +12,12 @@
         >
 
         <TextView
-            android:id="@+id/text_view_website"
+            android:id="@+id/text_view_news_website"
             android:layout_width="133dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="10dp"
             android:text="website"
             android:textColor="@color/green"
             android:textSize="20dp" />
@@ -33,14 +33,24 @@
             android:src="@mipmap/ic_launcher" />
 
         <TextView
-            android:id="@+id/text_view_title"
+            android:id="@+id/text_view_news_title"
+            android:layout_width="133dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="91dp"
+            android:text="title" />
+
+        <TextView
+            android:id="@+id/text_view_news_time"
             android:layout_width="133dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginStart="17dp"
-            android:layout_marginTop="67dp"
-            android:text="title" />
+            android:layout_marginTop="51dp"
+            android:text="time" />
 
     </RelativeLayout>
 

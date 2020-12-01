@@ -4,15 +4,19 @@ public class NewsItem {
     private String imageUrl;
     private String website;
     private String title;
+    private String url;
+    private String time;
 
 
-    public NewsItem(String imageUrl, String website, String title) {
+    public NewsItem(String imageUrl, String website, String title, String url, String time) {
         this.imageUrl = imageUrl;
         this.website = website;
         this.title = title;
+        this.url = url;
+        this.time = time;
     }
 
-    public String getImageUrl(){
+    public String getImageUrl() {
         return imageUrl;
     }
 
@@ -22,5 +26,13 @@ public class NewsItem {
 
     public String getWebsite() {
         return website;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getTime() {
+        return time;
     }
 }
