@@ -28,13 +28,13 @@ public class TradeDialog extends AppCompatDialogFragment {
     private EditText editShares;
     private TradeDialogListener listener;
     private static final String TAG = "TradeDialog";
-    private StockItem mStockItem;
+    private StockItemDetail mStockItem;
     private TextView textViewTotalCost;
     private TextView textViewTradeDialogHeader;
     private float availableAmount;
     private int existingShares;
 
-    public TradeDialog(StockItem stockItem, float availableAmount, int existingShares) {
+    public TradeDialog(StockItemDetail stockItem, float availableAmount, int existingShares) {
         mStockItem = stockItem;
         this.availableAmount = availableAmount;
         this.existingShares = existingShares;

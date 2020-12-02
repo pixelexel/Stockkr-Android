@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -320,6 +321,12 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     public void updateWatchlist(boolean b){
         mWatchlist.clear();
         if (watchlistTickers.length() == 0) {
+            if(b){
+                textViewFetch.setVisibility(View.GONE);
+                spinner.setVisibility(View.GONE);
+                textViewMainDate.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+            }
             return;
         }
 
@@ -378,6 +385,11 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 error.printStackTrace();
             }
         });
+
+        request2.setRetryPolicy(new DefaultRetryPolicy(10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(request2);
     }
 
@@ -440,6 +452,10 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 error.printStackTrace();
             }
         });
+
+        request1.setRetryPolicy(new DefaultRetryPolicy(10000,
+                3,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(request1);
 
@@ -510,6 +526,11 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 error.printStackTrace();
             }
         });
+
+        request1.setRetryPolicy(new DefaultRetryPolicy(10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(request1);
     }
 
@@ -519,6 +540,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(watchlistSection);
             mRecyclerView.setAdapter(sectionAdapter);
+            textViewMainDate.setVisibility(View.VISIBLE);
+            textViewFetch.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE);
             return;
         }
         String watchListParams = "";
@@ -577,6 +601,11 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 error.printStackTrace();
             }
         });
+
+        request2.setRetryPolicy(new DefaultRetryPolicy(10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(request2);
     }
 

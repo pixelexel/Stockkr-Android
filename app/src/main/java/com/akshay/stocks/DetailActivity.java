@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,6 +29,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,7 +45,7 @@ import static com.akshay.stocks.MainActivity.watchlist;
 import static java.lang.Integer.parseInt;
 
 
-public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener, NewsDialog.NewsDialogListener, NewsAdapter.onNewsItemClickListener{
+public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener, NewsDialog.NewsDialogListener, NewsAdapter.onNewsItemClickListener {
 
     private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
@@ -57,7 +59,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     private JSONArray portfolioTickers;
     private Button tradeButton;
     private TradeDialog tradeDialog;
-    private StockItem stockItem;
+    private StockItemDetail stockItem;
     private SuccessDialog successDialog;
 
     //Details
@@ -83,7 +85,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner = (ProgressBar) findViewById(R.id.progressBar1);
         textViewFetch = (TextView) findViewById(R.id.text_view_fetch);
 
 
@@ -111,7 +113,14 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         textViewSharesOwned = findViewById(R.id.text_view_shares_owned);
-        textViewSharesOwned.setText("Shares Owned: " + sharedpreferences.getInt(ticker, 0));
+        existingShares = sharedpreferences.getInt(ticker, 0);
+
+        if (existingShares == 0) {
+            textViewSharesOwned.setText("You have 0 shares of " + ticker + ".");
+        } else {
+            textViewSharesOwned.setText("Shares Owned: " + existingShares);
+        }
+
         tradeButton = (Button) findViewById(R.id.trade_button);
         tradeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,14 +128,14 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 openTradeDialog();
             }
         });
-        existingShares = sharedpreferences.getInt(ticker, 0);
         availableAmount = sharedpreferences.getFloat(available, 0);
+
 
         //News
         recyclerViewNews = findViewById(R.id.recycler_view_news);
         recyclerViewNews.setHasFixedSize(true);
         recyclerViewNews.setLayoutManager(new LinearLayoutManager(this));
-//        recyclerViewNews.setNestedScrollingEnabled(true);
+        recyclerViewNews.setNestedScrollingEnabled(false);
 
         newsItemArrayList = new ArrayList<>();
 
@@ -190,11 +199,11 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         }
         long diff = currentTimestamp - p.getTime();
         long diffMinutes = diff / (60 * 1000) % 60;
-        if(diffMinutes < 60){
+        if (diffMinutes < 60) {
             return diffMinutes + " minutes ago";
         }
         long diffHours = diff / (60 * 60 * 1000);
-        if(diffHours < 24){
+        if (diffHours < 24) {
             return diffHours + " hours ago";
         }
         int diffInDays = (int) diff / (1000 * 60 * 60 * 24);
@@ -212,19 +221,19 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
 
-        if(existingShares == 0){
+        if (existingShares == 0) {
             managePortfolio(true);
         }
         int deltaShares = Integer.parseInt(shares);
         if (option) {
-            availableAmount -= deltaShares*stockItem.getLast();
+            availableAmount -= deltaShares * stockItem.getLast();
             existingShares += deltaShares;
         } else {
-            availableAmount += deltaShares*stockItem.getLast();
+            availableAmount += deltaShares * stockItem.getLast();
             existingShares -= deltaShares;
         }
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putFloat(available,availableAmount);
+        editor.putFloat(available, availableAmount);
 
         if (existingShares <= 0) {
             editor.remove(ticker);
@@ -234,7 +243,11 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         }
 
         editor.commit();
-        textViewSharesOwned.setText("Shares Owned: " + existingShares);
+        if (existingShares == 0) {
+            textViewSharesOwned.setText("You have 0 shares of " + ticker + ".");
+        } else {
+            textViewSharesOwned.setText("Shares Owned: " + existingShares);
+        }
         tradeDialog.dismiss();
 
         successDialog = new SuccessDialog(ticker, option, deltaShares);
@@ -352,6 +365,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         }
     }
 
+
     private void parseDetails(String ticker) {
         String url = SERVER + "/api/details?ticker=" + ticker;
 
@@ -360,9 +374,78 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
             public void onResponse(JSONObject stock) {
                 try {
                     String name = stock.getString("name");
-                    Double last = Double.parseDouble(stock.getString("last"));
-                    stockItem = new StockItem(ticker, name, last, 0.0);
+                    String about = stock.getString("description");
+                    String close = stock.getString("prevClose");
+                    String high = stock.getString("high");
+                    String low = stock.getString("low");
+                    String open = stock.getString("open");
+                    String volume = stock.getString("volume");
+                    String mid = stock.getString("mid");
+                    String bid = stock.getString("bidPrice");
+
+                    double last = Double.parseDouble(stock.getString("last"));
+                    String change = String.format("%.2f", (last - Double.parseDouble(close)));
+
+                    stockItem = new StockItemDetail(name, ticker, last);
+
+                    TextView textViewChange = findViewById(R.id.text_view_change);
+                    if (last - Double.parseDouble(close) > 0) {
+                        textViewChange.setText("+$" + Math.abs(Double.parseDouble(change)));
+                        textViewChange.setTextColor(Color.parseColor("#319C5E"));
+                    } else if (last - Double.parseDouble(close) < 0) {
+                        textViewChange.setText("-$" + Math.abs(Double.parseDouble(change)));
+                        textViewChange.setTextColor(Color.parseColor("#9B4049"));
+                    } else {
+                        textViewChange.setTextColor(Color.parseColor("#D3D3D3"));
+                    }
+
                     textViewName.setText(name);
+                    TextView textViewLast = findViewById(R.id.text_view_last_detail);
+                    textViewLast.setText("$" + String.format("%.2f", last));
+                    TextView textViewMarketValue = findViewById(R.id.text_view_market_value);
+                    if (existingShares == 0) {
+                        textViewMarketValue.setText("Start Trading!");
+                    } else {
+                        textViewMarketValue.setText("Market Value: " + String.format("%.2f", existingShares * last));
+                    }
+
+                    TextView textViewDesc = findViewById(R.id.text_view_description);
+                    textViewDesc.setText(about);
+                    TextView textViewShow = findViewById(R.id.text_view_show);
+                    textViewShow.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (textViewShow.getText().equals("Show more...")) {
+                                textViewDesc.setMaxLines(40);
+                                textViewShow.setText("Show less");
+                            } else {
+                                textViewDesc.setMaxLines(2);
+                                textViewShow.setText("Show more...");
+                            }
+                        }
+                    });
+
+                    TextView textViewCurrent = findViewById(R.id.tv_current);
+                    textViewCurrent.setText("Current Price: " + String.valueOf(last));
+                    TextView textViewLow = findViewById(R.id.tv_low);
+                    textViewLow.setText("Low: " + low);
+                    TextView textViewBid = findViewById(R.id.tv_bid);
+                    if(bid.equals("null")){
+                        bid = "0.0";
+                    }
+                    textViewBid.setText("Bid Price: " + bid);
+                    TextView textViewOpen = findViewById(R.id.tv_open);
+                    textViewOpen.setText("Open Price: " + open);
+                    TextView textViewMid = findViewById(R.id.tv_mid);
+                    if(mid.equals("null")){
+                        mid = "0.0";
+                    }
+                    textViewMid.setText("Mid: " + mid);
+                    TextView textViewHigh = findViewById(R.id.tv_high);
+                    textViewHigh.setText("High: " + high);
+                    TextView textViewVolume = findViewById(R.id.tv_volume);
+                    textViewVolume.setText("Volume: " + volume);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -381,7 +464,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     public void onNewsItemClick(int position) {
         NewsItem newsItem = newsItemArrayList.get(position);
 
-        newsDialog = new NewsDialog(newsItem.getTitle(),newsItem.getUrl(),newsItem.getImageUrl());
+        newsDialog = new NewsDialog(newsItem.getTitle(), newsItem.getUrl(), newsItem.getImageUrl());
 
         newsDialog.show(getSupportFragmentManager(), "news dialog");
     }

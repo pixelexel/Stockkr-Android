@@ -13,7 +13,7 @@ import java.util.List;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 
-final class StockSection extends Section{
+final class StockSection extends Section {
 
     final String title;
     final List<StockItem> list;
@@ -50,7 +50,7 @@ final class StockSection extends Section{
 
 
         //Net Worth
-        if(stock.getTicker().equals("worth")){
+        if (stock.getTicker().equals("worth")) {
             itemHolder.netWorth.setVisibility(View.VISIBLE);
             itemHolder.worth.setText(stock.getName());
             itemHolder.worth.setVisibility(View.VISIBLE);
@@ -69,13 +69,17 @@ final class StockSection extends Section{
         itemHolder.mTextViewLast.setText(String.valueOf(stock.getLast()));
         itemHolder.mTextViewChange.setText(String.format("%.2f", Math.abs(stock.getChange())));
 
-        if(stock.getChange() > 0){
+        if (stock.getChange() > 0) {
             itemHolder.imageViewArrow.setImageResource(R.drawable.ic_twotone_trending_up_24);
             itemHolder.mTextViewChange.setTextColor(Color.parseColor("#319C5E"));
-        } else {
+        } else if (stock.getChange() < 0) {
             itemHolder.imageViewArrow.setImageResource(R.drawable.ic_baseline_trending_down_24);
             itemHolder.mTextViewChange.setTextColor(Color.parseColor("#9B4049"));
+        } else {
+            itemHolder.mTextViewChange.setTextColor(Color.parseColor("#D3D3D3"));
+            itemHolder.imageViewArrow.setVisibility(View.GONE);
         }
+
 
         itemHolder.rootView.setOnClickListener(v ->
                 clickListener.onItemRootViewClicked(this, itemHolder.getAdapterPosition())
