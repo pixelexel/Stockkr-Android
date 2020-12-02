@@ -12,7 +12,7 @@ public class Search {
     private RequestQueue mRequestQueue;
     private static Context mCtx;
 
-    private static String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
+    private static String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
 
     public Search(Context ctx) {
         mCtx = ctx;

@@ -47,7 +47,7 @@ import static java.lang.Integer.parseInt;
 
 public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener, NewsDialog.NewsDialogListener, NewsAdapter.onNewsItemClickListener {
 
-    private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
+    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
 
     private RequestQueue mRequestQueue;
@@ -144,7 +144,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     }
 
     private void parseNews() {
-        String url = "http://8tsathna.us-east-1.elasticbeanstalk.com/api/news?ticker=" + ticker;
+        String url = SERVER + "/api/news?ticker=" + ticker;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {

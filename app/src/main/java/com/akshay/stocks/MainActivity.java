@@ -50,7 +50,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 public class MainActivity extends AppCompatActivity implements StockSection.ClickListener {
 
-    private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
+    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "MainActivity";
     public static final String EXTRA_TICKER = "ticker";
     private List<StockItem> mPortfolioList;
@@ -327,6 +327,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 textViewMainDate.setVisibility(View.VISIBLE);
                 mRecyclerView.setVisibility(View.VISIBLE);
             }
+            sectionAdapter.notifyDataSetChanged();
             return;
         }
 
@@ -396,6 +397,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     public void updateLists(boolean b){
         mPortfolioList.clear();
         if (portfolioTickers.length() == 0) {
+            float available = sharedpreferences.getFloat("available",0);
+            net_worth = available;
+            mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
             updateWatchlist(b);
             return;
         }
@@ -465,6 +469,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     private void getStockList() {
         //CHECK FOR EMPTY tickers
         if (portfolioTickers.length() == 0) {
+            float available = sharedpreferences.getFloat("available",0);
+            net_worth = available;
+            mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
             portfolioSection = new StockSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(portfolioSection);
             getWatchList();
@@ -684,9 +691,10 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 StockSection toSection = (StockSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
-                if(fromPosition == 0 || toPosition == 0){
-                    return false;
-                }
+//                if(fromPosition == 0 || toPosition == 0){
+//                    Log.d(TAG, "onMove: " + fromPosition + toPosition);
+//                    return false;
+//                }
                 if (fromSection.equals(toSection)) {
                     moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition));
                     sectionAdapter.notifyItemMoved(fromPosition,toPosition);
