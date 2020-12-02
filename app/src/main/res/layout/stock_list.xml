@@ -12,6 +12,25 @@
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/text_view_net_worth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Net Worth"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/text_view_worth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Worth"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:visibility="gone"/>
+
+        <TextView
             android:id="@+id/text_view_ticker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

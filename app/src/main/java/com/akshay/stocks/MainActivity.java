@@ -47,7 +47,7 @@ import java.util.TimerTask;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
-public class MainActivity extends AppCompatActivity implements StocksSection.ClickListener {
+public class MainActivity extends AppCompatActivity implements StockSection.ClickListener {
 
     private String SERVER = "http://8tsathna.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "MainActivity";
@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     private RecyclerView mRecyclerView;
     private RequestQueue mRequestQueue;
     private SectionedRecyclerViewAdapter sectionAdapter;
-    private StocksSection portfolioSection;
-    private StocksSection watchlistSection;
+    private StockSection portfolioSection;
+    private StockSection watchlistSection;
 
     private JSONArray watchlistTickers;
     private JSONArray portfolioTickers;
@@ -421,11 +421,12 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                         temp += last*shares;
                         mPortfolioList.add(new StockItem(name, ticker, last, change));
                     }
+                    sortPortfolio();
 
+                    //Net_worth
                     float available = sharedpreferences.getFloat("available",0);
                     net_worth = available + temp;
-                    Log.d(TAG, "onResponse: NET " + net_worth);
-                    sortPortfolio();
+                    mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
 
                     updateWatchlist(b);
 
@@ -448,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     private void getStockList() {
         //CHECK FOR EMPTY tickers
         if (portfolioTickers.length() == 0) {
-            portfolioSection = new StocksSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
+            portfolioSection = new StockSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(portfolioSection);
             getWatchList();
             return;
@@ -487,13 +488,14 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                         temp += last*shares;
                         mPortfolioList.add(new StockItem(name, ticker, last, change));
                     }
-
-                    float available = sharedpreferences.getFloat("available",0);
-                    net_worth = available + temp;
-                    Log.d(TAG, "onResponse: NET " + net_worth);
                     sortPortfolio();
 
-                    portfolioSection = new StocksSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
+                    //Net_worth
+                    float available = sharedpreferences.getFloat("available",0);
+                    net_worth = available + temp;
+                    mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
+
+                    portfolioSection = new StockSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(portfolioSection);
 
                     getWatchList();
@@ -514,7 +516,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     public void getWatchList() {
         //CHECK FOR EMPTY tickers
         if (watchlistTickers.length() == 0) {
-            watchlistSection = new StocksSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
+            watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(watchlistSection);
             mRecyclerView.setAdapter(sectionAdapter);
             return;
@@ -555,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                         mWatchlist.add(new StockItem(name, ticker, last, change));
                     }
                     sortWatchlist();
-                    watchlistSection = new StocksSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
+                    watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(watchlistSection);
 
                     mRecyclerView.setAdapter(sectionAdapter);
@@ -580,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
 
     @Override
-    public void onItemRootViewClicked(@NonNull StocksSection section, int itemAdapterPosition) {
+    public void onItemRootViewClicked(@NonNull StockSection section, int itemAdapterPosition) {
         Intent detailIntent = new Intent(this, DetailActivity.class);
         StockItem clickedItem = section.list.get(sectionAdapter.getPositionInSection(itemAdapterPosition));
         detailIntent.putExtra(EXTRA_TICKER, clickedItem.getTicker());
@@ -649,10 +651,13 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
             try {
-                StocksSection fromSection = (StocksSection) sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition());
-                StocksSection toSection = (StocksSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
+                StockSection fromSection = (StockSection) sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition());
+                StockSection toSection = (StockSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
+                if(fromPosition == 0 || toPosition == 0){
+                    return false;
+                }
                 if (fromSection.equals(toSection)) {
                     moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition));
                     sectionAdapter.notifyItemMoved(fromPosition,toPosition);

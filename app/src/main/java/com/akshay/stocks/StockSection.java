@@ -13,14 +13,14 @@ import java.util.List;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 
-final class StocksSection extends Section{
+final class StockSection extends Section{
 
     final String title;
     final List<StockItem> list;
     final ClickListener clickListener;
 
-    public StocksSection(@NonNull final String title, @NonNull final List<StockItem> list,
-                  @NonNull final ClickListener clickListener) {
+    public StockSection(@NonNull final String title, @NonNull final List<StockItem> list,
+                        @NonNull final ClickListener clickListener) {
 
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.stock_list)
@@ -48,9 +48,21 @@ final class StocksSection extends Section{
 
         final StockItem stock = list.get(position);
 
-//        if(stock.getTicker().equals("worth")){
-//            final NetWorthViewHolder netWorthViewHolder = (NetWorthViewHolder) holder;
-//        }
+
+        //Net Worth
+        if(stock.getTicker().equals("worth")){
+            itemHolder.netWorth.setVisibility(View.VISIBLE);
+            itemHolder.worth.setText(stock.getName());
+            itemHolder.worth.setVisibility(View.VISIBLE);
+            itemHolder.mTextViewTicker.setVisibility(View.GONE);
+            itemHolder.mTextViewLast.setVisibility(View.GONE);
+            itemHolder.imageViewArrow.setVisibility(View.GONE);
+            itemHolder.carrot.setVisibility(View.GONE);
+            itemHolder.mTextViewName.setVisibility(View.GONE);
+            itemHolder.mTextViewChange.setVisibility(View.GONE);
+            itemHolder.mTextViewChange.setVisibility(View.GONE);
+            return;
+        }
 
         itemHolder.mTextViewTicker.setText(stock.getTicker());
         itemHolder.mTextViewName.setText(stock.getName());
@@ -83,6 +95,6 @@ final class StocksSection extends Section{
     }
 
     interface ClickListener {
-        void onItemRootViewClicked(@NonNull final StocksSection section, final int itemAdapterPosition);
+        void onItemRootViewClicked(@NonNull final StockSection section, final int itemAdapterPosition);
     }
 }
