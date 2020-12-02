@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,7 @@ import java.util.Date;
 
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
+import static com.akshay.stocks.MainActivity.available;
 import static com.akshay.stocks.MainActivity.portfolio;
 import static com.akshay.stocks.MainActivity.watchlist;
 import static java.lang.Integer.parseInt;
@@ -68,11 +70,21 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     private RequestQueue requestQueue;
     private NewsDialog newsDialog;
 
+    //Trade
+    int existingShares;
+    float availableAmount;
+
+    //Fetch
+    private ProgressBar spinner;
+    private TextView textViewFetch;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        textViewFetch = (TextView) findViewById(R.id.text_view_fetch);
 
 
         Intent intent = getIntent();
@@ -107,6 +119,8 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 openTradeDialog();
             }
         });
+        existingShares = sharedpreferences.getInt(ticker, 0);
+        availableAmount = sharedpreferences.getFloat(available, 0);
 
         //News
         recyclerViewNews = findViewById(R.id.recycler_view_news);
@@ -147,6 +161,9 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                             recyclerViewNews.setAdapter(newsAdapter);
                             newsAdapter.setOnItemClickListener(DetailActivity.this);
 
+                            textViewFetch.setVisibility(View.GONE);
+                            spinner.setVisibility(View.GONE);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -185,7 +202,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     }
 
     private void openTradeDialog() {
-        tradeDialog = new TradeDialog(stockItem);
+        tradeDialog = new TradeDialog(stockItem, availableAmount, existingShares);
 
         tradeDialog.show(getSupportFragmentManager(), "trade dialog");
     }
@@ -194,17 +211,20 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     public void tradeStocks(boolean option, String shares) {
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
-        int existingShares = sharedpreferences.getInt(ticker, 0);
+
         if(existingShares == 0){
             managePortfolio(true);
         }
         int deltaShares = Integer.parseInt(shares);
         if (option) {
+            availableAmount -= deltaShares*stockItem.getLast();
             existingShares += deltaShares;
         } else {
+            availableAmount += deltaShares*stockItem.getLast();
             existingShares -= deltaShares;
         }
         SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putFloat(available,availableAmount);
 
         if (existingShares <= 0) {
             editor.remove(ticker);

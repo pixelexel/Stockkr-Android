@@ -9,15 +9,18 @@
     android:background="@color/app_color">
 
     <TextView
-        android:paddingBottom="8dp"
-        android:paddingLeft="8dp"
         android:id="@+id/text_view_main_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="-1dp"
+        android:layout_marginTop="0dp"
+        android:paddingLeft="8dp"
+        android:paddingBottom="8dp"
         android:textColor="@color/date"
         android:textSize="20dp"
-        android:textStyle="bold"
-        android:text="Date"/>
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -28,11 +31,30 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="1dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="37dp"
         android:layout_marginEnd="0dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="7dp"
         android:background="@color/app_color"
         tools:itemCount="14" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="#5730eb"
+        android:tooltipText="Fetching Data" />
+
+    <TextView
+        android:id="@+id/text_view_fetch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="281dp"
+        android:text="Fetching Data"
+        android:textColor="@color/black" />
 
 </RelativeLayout>
 

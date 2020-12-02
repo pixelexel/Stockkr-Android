@@ -4,13 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -18,17 +16,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -42,11 +37,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
@@ -83,7 +79,14 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     private static final long AUTO_COMPLETE_DELAY = 300;
     private SearchView.SearchAutoComplete searchAutoComplete;
 
-    private double net_worth;
+    private float net_worth;
+
+    //Update
+    boolean shouldExecuteOnResume = false;
+    private ProgressBar spinner;
+    String date;
+    TextView textViewMainDate;
+    TextView textViewFetch;
 
 
     @Override
@@ -92,11 +95,14 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().setElevation(0);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        textViewFetch = (TextView) findViewById(R.id.text_view_fetch);
 
         //Date
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy");
-        String date = sdf.format(new Date());
-        TextView textViewMainDate = findViewById(R.id.text_view_main_date);
+        date = sdf.format(new Date());
+        textViewMainDate = findViewById(R.id.text_view_main_date);
+        textViewMainDate.setVisibility(View.INVISIBLE);
         textViewMainDate.setText(date);
 
         sharedpreferences = getSharedPreferences(SHARED_PREFS,
@@ -110,8 +116,8 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                 json_temp_list = new JSONArray(temp_list);
                 editor.putString(watchlist, json_temp_list.toString());
                 editor.putString(portfolio, json_temp_list.toString());
-                editor.putInt(worth, 20000);
-                editor.putInt(available, 20000);
+                editor.putFloat(worth, 20000);
+                editor.putFloat(available, 20000);
                 editor.commit();
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -131,6 +137,42 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         getStockList();
     }
 
+    @Override
+    public void onResume()
+    {  // After a pause OR at startup
+        super.onResume();
+        if(shouldExecuteOnResume){
+            spinner.setVisibility(View.VISIBLE);
+            textViewFetch.setVisibility(View.VISIBLE);
+            textViewMainDate.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.GONE);
+            loadStockList();
+            updateLists(true);
+            Log.d(TAG, "run: Refresh on Back");
+        }
+    }
+
+    public void refreshList(){
+        Log.d(TAG, "refreshList: FIRST");
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        TimerTask doAsynchronousTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            loadStockList();
+                            updateLists(false);
+                            Log.d(TAG, "run: Refresh");
+                        } catch (Exception e) {
+                        }
+                    }
+                });
+            }
+        };
+        timer.schedule(doAsynchronousTask, 150000000, 150000000);
+    }
 
     private void makeSearchCall(String text) {
         Search.make(this, text, new Response.Listener<String>() {
@@ -209,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
             @Override
             public boolean onQueryTextSubmit(String query) {
                 loadDetails(query);
+//                item.collapseActionView();
                 return false;
             }
 
@@ -274,10 +317,138 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
         }
     }
 
+    public void updateWatchlist(boolean b){
+        mWatchlist.clear();
+        if (watchlistTickers.length() == 0) {
+            return;
+        }
+
+        String watchListParams = "";
+        Log.d(TAG, "getWatchList: " + watchlistTickers);
+        for (int i = 0; i < watchlistTickers.length(); i++) {
+            try {
+                watchListParams = watchListParams + "&ticker=" + (String) watchlistTickers.get(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String watchListUrl = SERVER + "/api/stocklist?" + watchListParams.substring(1);
+
+        JsonObjectRequest request2 = new JsonObjectRequest(Request.Method.GET, watchListUrl, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray jsonArray = response.getJSONArray("stocks");
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject stock = jsonArray.getJSONObject(i);
+
+                        String name = stock.getString("name");
+                        String ticker = stock.getString("ticker");
+                        Double last = Double.parseDouble(stock.getString("last"));
+                        Double prevClose = Double.parseDouble(stock.getString("prevClose"));
+                        Double change = last - prevClose;
+
+                        sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                                MODE_PRIVATE);
+                        int shares = sharedpreferences.getInt(ticker,0);
+                        if(shares > 0){
+                            name =  shares + ".0 shares";
+                        }
+
+                        mWatchlist.add(new StockItem(name, ticker, last, change));
+                    }
+                    sortWatchlist();
+                    sectionAdapter.notifyDataSetChanged();
+
+                    if(b){
+                        textViewFetch.setVisibility(View.GONE);
+                        spinner.setVisibility(View.GONE);
+                        textViewMainDate.setVisibility(View.VISIBLE);
+                        mRecyclerView.setVisibility(View.VISIBLE);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        mRequestQueue.add(request2);
+    }
+
+    public void updateLists(boolean b){
+        mPortfolioList.clear();
+        if (portfolioTickers.length() == 0) {
+            updateWatchlist(b);
+            return;
+        }
+
+        String portfolioListParams = "";
+        for (int i = 0; i < portfolioTickers.length(); i++) {
+            try {
+                portfolioListParams = portfolioListParams + "&ticker=" + (String) portfolioTickers.get(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String portfolioListUrl = SERVER + "/api/stocklist?" + portfolioListParams.substring(1);
+
+        JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, portfolioListUrl, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray jsonArray = response.getJSONArray("stocks");
+
+                    sharedpreferences = getSharedPreferences(SHARED_PREFS,
+                            MODE_PRIVATE);
+                    float temp = 0;
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject stock = jsonArray.getJSONObject(i);
+
+                        String ticker = stock.getString("ticker");
+                        Double last = Double.parseDouble(stock.getString("last"));
+                        Double prevClose = Double.parseDouble(stock.getString("prevClose"));
+                        Double change = last - prevClose;
+
+                        int shares = sharedpreferences.getInt(ticker,0);
+                        String name =  shares + ".0 shares";
+
+                        temp += last*shares;
+                        mPortfolioList.add(new StockItem(name, ticker, last, change));
+                    }
+
+                    float available = sharedpreferences.getFloat("available",0);
+                    net_worth = available + temp;
+                    Log.d(TAG, "onResponse: NET " + net_worth);
+                    sortPortfolio();
+
+                    updateWatchlist(b);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+
+        mRequestQueue.add(request1);
+
+    }
+
+
     private void getStockList() {
         //CHECK FOR EMPTY tickers
         if (portfolioTickers.length() == 0) {
-            portfolioSection = new StocksSection("PORTFOLIO - You do not have any stocks in your portfolio", mPortfolioList, MainActivity.this::onItemRootViewClicked);
+            portfolioSection = new StocksSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(portfolioSection);
             getWatchList();
             return;
@@ -301,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
 
                     sharedpreferences = getSharedPreferences(SHARED_PREFS,
                             MODE_PRIVATE);
-                    double temp = 0;
+                    float temp = 0;
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject stock = jsonArray.getJSONObject(i);
 
@@ -317,10 +488,11 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                         mPortfolioList.add(new StockItem(name, ticker, last, change));
                     }
 
-                    double available = sharedpreferences.getFloat("available",0);
+                    float available = sharedpreferences.getFloat("available",0);
                     net_worth = available + temp;
-
+                    Log.d(TAG, "onResponse: NET " + net_worth);
                     sortPortfolio();
+
                     portfolioSection = new StocksSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(portfolioSection);
 
@@ -342,7 +514,7 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
     public void getWatchList() {
         //CHECK FOR EMPTY tickers
         if (watchlistTickers.length() == 0) {
-            watchlistSection = new StocksSection("WATCHLIST - You do not have any stocks in your watchlist", mWatchlist, MainActivity.this::onItemRootViewClicked);
+            watchlistSection = new StocksSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(watchlistSection);
             mRecyclerView.setAdapter(sectionAdapter);
             return;
@@ -387,6 +559,11 @@ public class MainActivity extends AppCompatActivity implements StocksSection.Cli
                     sectionAdapter.addSection(watchlistSection);
 
                     mRecyclerView.setAdapter(sectionAdapter);
+                    shouldExecuteOnResume = true;
+                    textViewMainDate.setVisibility(View.VISIBLE);
+                    textViewFetch.setVisibility(View.GONE);
+                    spinner.setVisibility(View.GONE);
+                    refreshList();
 
                 } catch (JSONException e) {
                     e.printStackTrace();

@@ -40,7 +40,7 @@
     <WebView
         android:id="@+id/chart_web_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="410dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="0dp"
@@ -71,5 +71,24 @@
         android:layout_marginStart="0dp"
         android:layout_marginTop="121dp"
         android:layout_marginEnd="0dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="#5730eb"
+        android:tooltipText="Fetching Data" />
+
+    <TextView
+        android:id="@+id/text_view_fetch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="281dp"
+        android:text="Fetching Data"
+        android:textColor="@color/black" />
 
 </RelativeLayout>

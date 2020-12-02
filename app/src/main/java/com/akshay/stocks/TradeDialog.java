@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,10 +14,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialogFragment;
+
+import java.security.AccessController;
+
+import static com.akshay.stocks.MainActivity.SHARED_PREFS;
 
 public class TradeDialog extends AppCompatDialogFragment {
     private EditText editShares;
@@ -25,9 +31,13 @@ public class TradeDialog extends AppCompatDialogFragment {
     private StockItem mStockItem;
     private TextView textViewTotalCost;
     private TextView textViewTradeDialogHeader;
+    private float availableAmount;
+    private int existingShares;
 
-    public TradeDialog(StockItem stockItem) {
+    public TradeDialog(StockItem stockItem, float availableAmount, int existingShares) {
         mStockItem = stockItem;
+        this.availableAmount = availableAmount;
+        this.existingShares = existingShares;
     }
 
     @NonNull
@@ -41,7 +51,9 @@ public class TradeDialog extends AppCompatDialogFragment {
         builder.setView(view);
 
         textViewTradeDialogHeader = view.findViewById(R.id.text_view_trade_dialog_header);
+        TextView textViewTradeDialogAvailable = view.findViewById(R.id.text_view_available);
         textViewTradeDialogHeader.setText("Trade " + mStockItem.getTicker() + " shares");
+        textViewTradeDialogAvailable.setText("$" + availableAmount + " available to buy " + mStockItem.getTicker());
 
         editShares = (EditText) view.findViewById(R.id.edit_shares);
 
@@ -72,17 +84,51 @@ public class TradeDialog extends AppCompatDialogFragment {
         buy.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String shares = editShares.getText().toString();
-                listener.tradeStocks(true, shares);
+                if(validateBuy(shares)){
+                    listener.tradeStocks(true, shares);
+                }
             }
         });
 
         sell.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String shares = editShares.getText().toString();
-                listener.tradeStocks(false, shares);
+                if(validateSell(shares)){
+                    listener.tradeStocks(false, shares);
+                }
             }
         });
         return builder.create();
+    }
+
+    private boolean validateBuy(String shares) {
+        int shares_int = Integer.parseInt(shares);
+
+        if(shares_int > 0){
+            if(mStockItem.getLast()*shares_int <= availableAmount){
+                return true;
+            } else {
+                Toast.makeText(getActivity(), "Not enough money to buy", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(getActivity(), "Cannot buy less than 0 shares", Toast.LENGTH_LONG).show();
+        }
+        return false;
+    }
+
+    private boolean validateSell(String shares) {
+        int shares_int = Integer.parseInt(shares);
+
+        if(shares_int > 0){
+            if(shares_int <= existingShares){
+                return true;
+            } else {
+                Toast.makeText(getActivity(), "Not enough shares to sell", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(getActivity(), "Cannot sell less than 0 shares", Toast.LENGTH_LONG).show();
+        }
+        return false;
     }
 
 
