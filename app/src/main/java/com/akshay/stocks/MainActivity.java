@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, 15000000, 15000000);
+        timer.schedule(doAsynchronousTask, 15000, 15000);
     }
 
     private void makeSearchCall(String text) {
