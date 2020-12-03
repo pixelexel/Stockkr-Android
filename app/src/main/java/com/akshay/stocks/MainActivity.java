@@ -12,12 +12,19 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     String date;
     TextView textViewMainDate;
     TextView textViewFetch;
-
+    TextView textViewPowered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +112,15 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         textViewMainDate = findViewById(R.id.text_view_main_date);
         textViewMainDate.setVisibility(View.INVISIBLE);
         textViewMainDate.setText(date);
+
+        //Powered
+        textViewPowered =(TextView)findViewById(R.id.text_view_powered);
+        textViewPowered.setClickable(true);
+        textViewPowered.setMovementMethod(LinkMovementMethod.getInstance());
+        String text = "<a href='https://www.tiingo.com/'> Powered by tiingo </a>";
+        textViewPowered.setText(Html.fromHtml(text));
+        stripUnderlines(textViewPowered);
+        textViewPowered.setVisibility(View.INVISIBLE);
 
         sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
@@ -149,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             spinner.setVisibility(View.VISIBLE);
             textViewFetch.setVisibility(View.VISIBLE);
             textViewMainDate.setVisibility(View.GONE);
+            textViewPowered.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.GONE);
             loadStockList();
             updateLists(true);
@@ -330,6 +347,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 textViewFetch.setVisibility(View.GONE);
                 spinner.setVisibility(View.GONE);
                 textViewMainDate.setVisibility(View.VISIBLE);
+                textViewPowered.setVisibility(View.VISIBLE);
                 mRecyclerView.setVisibility(View.VISIBLE);
             }
             sectionAdapter.notifyDataSetChanged();
@@ -379,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                         textViewFetch.setVisibility(View.GONE);
                         spinner.setVisibility(View.GONE);
                         textViewMainDate.setVisibility(View.VISIBLE);
+                        textViewPowered.setVisibility(View.VISIBLE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
 
@@ -401,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     }
 
     public void updateLists(boolean b){
+        Log.d(TAG, "updateLists: " + portfolioTickers.length() + b);
         mPortfolioList.clear();
         if (portfolioTickers.length() < 2) {
             float available = sharedpreferences.getFloat("available",0);
@@ -565,8 +585,10 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             sectionAdapter.addSection(watchlistSection);
             mRecyclerView.setAdapter(sectionAdapter);
             textViewMainDate.setVisibility(View.VISIBLE);
+            textViewPowered.setVisibility(View.VISIBLE);
             textViewFetch.setVisibility(View.GONE);
             spinner.setVisibility(View.GONE);
+            shouldExecuteOnResume = true;
             return;
         }
         String watchListParams = "";
@@ -612,6 +634,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                     mRecyclerView.setAdapter(sectionAdapter);
                     shouldExecuteOnResume = true;
                     textViewMainDate.setVisibility(View.VISIBLE);
+                    textViewPowered.setVisibility(View.VISIBLE);
                     textViewFetch.setVisibility(View.GONE);
                     spinner.setVisibility(View.GONE);
                     refreshList();
@@ -758,4 +781,28 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
     };
+
+    private class URLSpanNoUnderline extends URLSpan {
+        public URLSpanNoUnderline(String url) {
+            super(url);
+        }
+        @Override public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
+            ds.setUnderlineText(false);
+        }
+    }
+
+    private void stripUnderlines(TextView textView) {
+        Spannable s = new SpannableString(textView.getText());
+        URLSpan[] spans = s.getSpans(0, s.length(), URLSpan.class);
+        for (URLSpan span: spans) {
+            int start = s.getSpanStart(span);
+            int end = s.getSpanEnd(span);
+            s.removeSpan(span);
+            span = new URLSpanNoUnderline(span.getURL());
+            s.setSpan(span, start, end, 0);
+        }
+        textView.setText(s);
+    }
+
 }
