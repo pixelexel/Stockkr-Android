@@ -27,6 +27,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
     public interface onNewsItemClickListener {
         void onNewsItemClick(int position);
+        void onNewsItemLongClick(int position);
     }
 
     public void setOnItemClickListener(onNewsItemClickListener listener){
@@ -95,6 +96,19 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
                             mListener.onNewsItemClick(position);
                         }
                     }
+                }
+            });
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener(){
+                @Override
+                public boolean onLongClick(View view) {
+                    if (mListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            mListener.onNewsItemLongClick(position);
+                        }
+                    }
+                    return false;
                 }
             });
         }

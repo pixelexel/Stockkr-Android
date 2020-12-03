@@ -51,7 +51,7 @@ public class NewsDialog extends AppCompatDialogFragment {
         ImageView imageViewNewsDialog = view.findViewById(R.id.image_view_news_dialog);
         Picasso.with(context).load(urlToImage).fit().centerInside().into(imageViewNewsDialog);
 
-        ImageButton chrome = (ImageButton) view.findViewById(R.id.chrome_button);
+        ImageView chrome = (ImageView) view.findViewById(R.id.chrome_button);
 
         chrome.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -61,7 +61,7 @@ public class NewsDialog extends AppCompatDialogFragment {
             }
         });
 
-        ImageButton twitter = (ImageButton) view.findViewById(R.id.twitter_button);
+        ImageView twitter = (ImageView) view.findViewById(R.id.twitter_button);
 
         twitter.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

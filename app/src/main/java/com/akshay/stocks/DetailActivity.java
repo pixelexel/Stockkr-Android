@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -476,10 +477,16 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     @Override
     public void onNewsItemClick(int position) {
         NewsItem newsItem = newsItemArrayList.get(position);
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(newsItem.getUrl()));
+        startActivity(browserIntent);
+    }
 
+    @Override
+    public void onNewsItemLongClick(int position) {
+        NewsItem newsItem = newsItemArrayList.get(position);
         newsDialog = new NewsDialog(newsItem.getTitle(), newsItem.getUrl(), newsItem.getImageUrl());
-
         newsDialog.show(getSupportFragmentManager(), "news dialog");
+
     }
 
     @Override

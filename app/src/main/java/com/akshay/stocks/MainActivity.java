@@ -1,14 +1,5 @@
 package com.akshay.stocks;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,6 +24,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     TextView textViewMainDate;
     TextView textViewFetch;
     TextView textViewPowered;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -742,6 +743,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
             try {
+//                viewHolder.itemView.setBackgroundColor(Color.GRAY);
                 StockSection fromSection = (StockSection) sectionAdapter.getSectionForPosition(viewHolder.getAdapterPosition());
                 StockSection toSection = (StockSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
                 int fromPosition = viewHolder.getAdapterPosition();
@@ -749,6 +751,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 if (fromSection.equals(toSection)) {
                     if(moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition))){
                         sectionAdapter.notifyItemMoved(fromPosition,toPosition);
+                        viewHolder.itemView.setBackgroundColor(getResources().getColor(R.color.app_color));
                     }
                 }
             } catch (IllegalArgumentException e) {
@@ -756,6 +759,18 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             }
             return false;
         }
+
+//        @Override
+//        public void onSelected(@NonNull RecyclerView.ViewHolder viewHolder) {
+//            viewHolder.itemView.setBackgroundColor(Color.GRAY);
+//
+//        }
+//
+//        @Override
+//        public void onRowClear(@NonNull RecyclerView.ViewHolder viewHolder) {
+//            viewHolder.itemView.setBackgroundColor(Color.WHITE);
+//
+//        }
 
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
