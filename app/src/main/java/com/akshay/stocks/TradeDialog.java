@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
 import java.security.AccessController;
+import java.text.DecimalFormat;
 
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
 
@@ -50,10 +51,14 @@ public class TradeDialog extends AppCompatDialogFragment {
 
         builder.setView(view);
 
+        DecimalFormat df = new DecimalFormat("#,###.00");
+
         textViewTradeDialogHeader = view.findViewById(R.id.text_view_trade_dialog_header);
         TextView textViewTradeDialogAvailable = view.findViewById(R.id.text_view_available);
-        textViewTradeDialogHeader.setText("Trade " + mStockItem.getTicker() + " shares");
-        textViewTradeDialogAvailable.setText("$" + availableAmount + " available to buy " + mStockItem.getTicker());
+        textViewTradeDialogHeader.setText("Trade " + mStockItem.getName() + " shares");
+        textViewTradeDialogAvailable.setText("$" + df.format(availableAmount) + " available to buy " + mStockItem.getTicker());
+        textViewTotalCost = view.findViewById(R.id.text_view_total_cost);
+        textViewTotalCost.setText("0 x " + "$" + mStockItem.getLast() + "/share = $0.0");
 
         editShares = (EditText) view.findViewById(R.id.edit_shares);
 
@@ -72,8 +77,7 @@ public class TradeDialog extends AppCompatDialogFragment {
                 } else {
                     shares = Integer.parseInt(editable.toString());
                 }
-                textViewTotalCost = view.findViewById(R.id.text_view_total_cost);
-                textViewTotalCost.setText(shares + " x " + "$" + mStockItem.getLast() + "/share = $" + shares*mStockItem.getLast());
+                textViewTotalCost.setText(shares + " x " + "$" + df.format(mStockItem.getLast()) + "/share = $" + df.format(shares*mStockItem.getLast()));
             }
         });
 

@@ -25,4 +25,8 @@
     <!-- Optional, on Android 5+ you can modify the colorPrimaryDark color to match the windowBackground color for further branding-->
     <!-- <item name="colorPrimaryDark">@android:color/white</item> -->
     </style>
+
+    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:background">@color/green</item>
+    </style>
 </resources>

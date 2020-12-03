@@ -31,7 +31,7 @@ public class SuccessDialog extends AppCompatDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_success_dialog, null);
@@ -40,9 +40,9 @@ public class SuccessDialog extends AppCompatDialogFragment {
 
         TextView textViewSuccessMessage = view.findViewById(R.id.text_view_success_message);
         if(mOption){
-            textViewSuccessMessage.setText("You have successfully bought " +  mShares + " of " + mTicker);
+            textViewSuccessMessage.setText("You have successfully bought " +  mShares + " shares of " + mTicker);
         } else {
-            textViewSuccessMessage.setText("You have successfully sold " +  mShares + " of " + mTicker);
+            textViewSuccessMessage.setText("You have successfully sold " +  mShares + " shares of " + mTicker);
         }
 
         Button done = (Button) view.findViewById(R.id.done_button);

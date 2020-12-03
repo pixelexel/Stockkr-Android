@@ -2,6 +2,7 @@ package com.akshay.stocks;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,6 +84,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     //Fetch
     private ProgressBar spinner;
     private TextView textViewFetch;
+    private ConstraintLayout detailsLayout;
 
 
     @Override
@@ -90,6 +93,8 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         setContentView(R.layout.activity_detail);
         spinner = (ProgressBar) findViewById(R.id.progressBar1);
         textViewFetch = (TextView) findViewById(R.id.text_view_fetch);
+        detailsLayout = (ConstraintLayout) findViewById(R.id.hide_details);
+        detailsLayout.setVisibility(View.GONE);
 
 
         Intent intent = getIntent();
@@ -176,6 +181,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
 
                             textViewFetch.setVisibility(View.GONE);
                             spinner.setVisibility(View.GONE);
+                            detailsLayout.setVisibility(View.VISIBLE);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
