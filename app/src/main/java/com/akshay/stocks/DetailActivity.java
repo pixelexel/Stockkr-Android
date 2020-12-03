@@ -320,6 +320,8 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     private void manageWatchlist(boolean fav) {
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString("name_"+ticker, stockItem.getName());
         if (fav) {
             watchlistTickers.put(ticker);
         } else {
@@ -335,7 +337,6 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                 }
             }
         }
-        SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putString(watchlist, watchlistTickers.toString());
         Log.d(TAG, "manageWatchlist: " + watchlistTickers.toString());
         editor.commit();

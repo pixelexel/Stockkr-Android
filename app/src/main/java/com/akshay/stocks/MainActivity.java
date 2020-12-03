@@ -112,11 +112,14 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         if(!sharedpreferences.getBoolean(init, false)){
             editor.putBoolean(init, true).apply();
             String[] temp_list = {};
+            String[] p_temp_list = {"worth"};
             JSONArray json_temp_list = null;
+            JSONArray json_p_temp_list = null;
             try {
                 json_temp_list = new JSONArray(temp_list);
+                json_p_temp_list = new JSONArray(p_temp_list);
                 editor.putString(watchlist, json_temp_list.toString());
-                editor.putString(portfolio, json_temp_list.toString());
+                editor.putString(portfolio, json_p_temp_list.toString());
                 editor.putFloat(worth, 20000);
                 editor.putFloat(available, 20000);
                 editor.commit();
@@ -287,6 +290,8 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
     }
 
     void sortPortfolio() {
+        Log.d(TAG, "sortPortfolio: T " +portfolioTickers);
+        Log.d(TAG, "sortPortfolio: List" + mPortfolioList);
         for(int i=0;i<portfolioTickers.length();i++){
             for(int j =0; j<mPortfolioList.size(); j++){
                 try {
@@ -351,8 +356,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject stock = jsonArray.getJSONObject(i);
 
-                        String name = stock.getString("name");
+//                        String name = stock.getString("name");
                         String ticker = stock.getString("ticker");
+                        String name = sharedpreferences.getString("name_" + ticker, "");
                         Double last = Double.parseDouble(stock.getString("last"));
                         Double prevClose = Double.parseDouble(stock.getString("prevClose"));
                         Double change = last - prevClose;
@@ -396,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
 
     public void updateLists(boolean b){
         mPortfolioList.clear();
-        if (portfolioTickers.length() == 0) {
+        if (portfolioTickers.length() < 2) {
             float available = sharedpreferences.getFloat("available",0);
             net_worth = available;
             mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
@@ -407,6 +413,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         String portfolioListParams = "";
         for (int i = 0; i < portfolioTickers.length(); i++) {
             try {
+                if(portfolioTickers.get(i).equals("worth")){
+                    continue;
+                }
                 portfolioListParams = portfolioListParams + "&ticker=" + (String) portfolioTickers.get(i);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -437,12 +446,13 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                         temp += last*shares;
                         mPortfolioList.add(new StockItem(name, ticker, last, change));
                     }
-                    sortPortfolio();
 
                     //Net_worth
                     float available = sharedpreferences.getFloat("available",0);
                     net_worth = available + temp;
                     mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
+
+                    sortPortfolio();
 
                     updateWatchlist(b);
 
@@ -468,7 +478,8 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
 
     private void getStockList() {
         //CHECK FOR EMPTY tickers
-        if (portfolioTickers.length() == 0) {
+//        mPortfolioList.clear();
+        if (portfolioTickers.length() < 2) {
             float available = sharedpreferences.getFloat("available",0);
             net_worth = available;
             mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
@@ -477,22 +488,27 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
             getWatchList();
             return;
         }
-
+        Log.d(TAG, "getStockList: Tickers " + portfolioTickers);
         String portfolioListParams = "";
         for (int i = 0; i < portfolioTickers.length(); i++) {
             try {
+                if(portfolioTickers.get(i).equals("worth")){
+                    continue;
+                }
                 portfolioListParams = portfolioListParams + "&ticker=" + (String) portfolioTickers.get(i);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         String portfolioListUrl = SERVER + "/api/stocklist?" + portfolioListParams.substring(1);
+        Log.d(TAG, "getStockList: URL " + portfolioListUrl);
 
         JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, portfolioListUrl, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
                     JSONArray jsonArray = response.getJSONArray("stocks");
+                    Log.d(TAG, "onResponse: Check" + jsonArray);
 
                     sharedpreferences = getSharedPreferences(SHARED_PREFS,
                             MODE_PRIVATE);
@@ -511,12 +527,12 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                         temp += last*shares;
                         mPortfolioList.add(new StockItem(name, ticker, last, change));
                     }
-                    sortPortfolio();
-
                     //Net_worth
                     float available = sharedpreferences.getFloat("available",0);
                     net_worth = available + temp;
                     mPortfolioList.add(0, new StockItem(String.format("%.2f",net_worth), "worth", 0.0, 0.0));
+
+                    sortPortfolio();
 
                     portfolioSection = new StockSection("PORTFOLIO", mPortfolioList, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(portfolioSection);
@@ -543,6 +559,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
 
     public void getWatchList() {
         //CHECK FOR EMPTY tickers
+//        mWatchlist.clear();
         if (watchlistTickers.length() == 0) {
             watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(watchlistSection);
@@ -572,8 +589,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject stock = jsonArray.getJSONObject(i);
 
-                        String name = stock.getString("name");
+//                        String name = stock.getString("name");
                         String ticker = stock.getString("ticker");
+                        String name = sharedpreferences.getString("name_" + ticker, "");
                         Double last = Double.parseDouble(stock.getString("last"));
                         Double prevClose = Double.parseDouble(stock.getString("prevClose"));
                         Double change = last - prevClose;
@@ -647,12 +665,12 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         editor.commit();
     }
 
-    public void moveInList(String sectionTitle, int fromPosition, int toPosition) {
+    public boolean moveInList(String sectionTitle, int fromPosition, int toPosition) {
         sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
 
-        if (sectionTitle == "Watchlist") {
+        if (sectionTitle == "WATCHLIST") {
             StockItem stock = mWatchlist.get(fromPosition);
             mWatchlist.remove(stock);
             mWatchlist.add(toPosition, stock);
@@ -661,12 +679,21 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 watchlistTickers.put(mWatchlist.get(i).getTicker());
             }
             editor.putString(watchlist, watchlistTickers.toString());
-           //Log.d(TAG, "moveInList: " + watchlistTickers);
+           Log.d(TAG, "moveInList: " + watchlistTickers);
         } else {
+            Log.d(TAG, "moveInList: P" );
+            if(fromPosition == 0 || toPosition == 0){
+                return false;
+            }
             StockItem stock = mPortfolioList.get(fromPosition);
             mPortfolioList.remove(stock);
             mPortfolioList.add(toPosition, stock);
             portfolioTickers = new JSONArray();
+//            try {
+//                portfolioTickers.put(0,"worth");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
             for(int i=0;i<mPortfolioList.size();i++) {
                 portfolioTickers.put(mPortfolioList.get(i).getTicker());
             }
@@ -674,6 +701,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         }
 
         editor.commit();
+        return true;
     }
 
     ItemTouchHelper.Callback itemTouchHelperCallback = new ItemTouchHelper.Callback() {
@@ -691,13 +719,10 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 StockSection toSection = (StockSection) sectionAdapter.getSectionForPosition(target.getAdapterPosition());
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
-//                if(fromPosition == 0 || toPosition == 0){
-//                    Log.d(TAG, "onMove: " + fromPosition + toPosition);
-//                    return false;
-//                }
                 if (fromSection.equals(toSection)) {
-                    moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition));
-                    sectionAdapter.notifyItemMoved(fromPosition,toPosition);
+                    if(moveInList(fromSection.title, sectionAdapter.getPositionInSection(fromPosition), sectionAdapter.getPositionInSection(toPosition))){
+                        sectionAdapter.notifyItemMoved(fromPosition,toPosition);
+                    }
                 }
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
