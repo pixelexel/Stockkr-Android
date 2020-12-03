@@ -102,6 +102,10 @@ public class TradeDialog extends AppCompatDialogFragment {
     }
 
     private boolean validateBuy(String shares) {
+        if(shares.equals("")){
+            Toast.makeText(getActivity(), "Please enter valid amount", Toast.LENGTH_LONG).show();
+            return false;
+        }
         int shares_int = Integer.parseInt(shares);
 
         if(shares_int > 0){
@@ -117,6 +121,10 @@ public class TradeDialog extends AppCompatDialogFragment {
     }
 
     private boolean validateSell(String shares) {
+        if(shares.equals("")){
+            Toast.makeText(getActivity(), "Please enter valid amount", Toast.LENGTH_LONG).show();
+            return false;
+        }
         int shares_int = Integer.parseInt(shares);
 
         if(shares_int > 0){

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -230,6 +231,9 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         searchAutoComplete.setDropDownBackgroundResource(R.color.white);
         searchAutoComplete.setThreshold(3);
         searchAutoComplete.setAdapter(autoSuggestAdapter);
+//        mRecyclerView.addItemDecoration(new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.HORIZONTAL));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(mRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
+
 
         searchAutoComplete.addTextChangedListener(new TextWatcher() {
             @Override
@@ -581,7 +585,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
         //CHECK FOR EMPTY tickers
 //        mWatchlist.clear();
         if (watchlistTickers.length() == 0) {
-            watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
+            watchlistSection = new StockSection("FAVORITES", mWatchlist, MainActivity.this::onItemRootViewClicked);
             sectionAdapter.addSection(watchlistSection);
             mRecyclerView.setAdapter(sectionAdapter);
             textViewMainDate.setVisibility(View.VISIBLE);
@@ -628,7 +632,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                         mWatchlist.add(new StockItem(name, ticker, last, change));
                     }
                     sortWatchlist();
-                    watchlistSection = new StockSection("WATCHLIST", mWatchlist, MainActivity.this::onItemRootViewClicked);
+                    watchlistSection = new StockSection("FAVORITES", mWatchlist, MainActivity.this::onItemRootViewClicked);
                     sectionAdapter.addSection(watchlistSection);
 
                     mRecyclerView.setAdapter(sectionAdapter);
@@ -693,7 +697,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
 
-        if (sectionTitle == "WATCHLIST") {
+        if (sectionTitle == "FAVORITES") {
             StockItem stock = mWatchlist.get(fromPosition);
             mWatchlist.remove(stock);
             mWatchlist.add(toPosition, stock);

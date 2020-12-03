@@ -286,12 +286,8 @@
 
         <WebView
             android:id="@+id/chart_web_view"
-            android:layout_width="386dp"
-            android:layout_height="400dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="7dp"
+            android:layout_width="match_parent"
+            android:layout_height="405dp"
             app:layout_constraintBottom_toTopOf="@+id/text_view_portfolio"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

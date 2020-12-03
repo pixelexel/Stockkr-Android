@@ -37,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static com.akshay.stocks.MainActivity.EXTRA_TICKER;
 import static com.akshay.stocks.MainActivity.SHARED_PREFS;
@@ -76,6 +77,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     //Trade
     int existingShares;
     float availableAmount;
+    TextView textViewMarketValue;
 
     //Fetch
     private ProgressBar spinner;
@@ -111,6 +113,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         actionBar.setHomeButtonEnabled(true);
 
         //Trade
+        textViewMarketValue = findViewById(R.id.text_view_market_value);
         SharedPreferences sharedpreferences = getSharedPreferences(SHARED_PREFS,
                 MODE_PRIVATE);
         textViewSharesOwned = findViewById(R.id.text_view_shares_owned);
@@ -199,15 +202,15 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
             e.printStackTrace();
         }
         long diff = currentTimestamp - p.getTime();
-        long diffMinutes = diff / (60 * 1000) % 60;
+        long diffMinutes = TimeUnit.MILLISECONDS.toMinutes(diff);
         if (diffMinutes < 60) {
             return diffMinutes + " minutes ago";
         }
-        long diffHours = diff / (60 * 60 * 1000);
+        long diffHours = TimeUnit.MILLISECONDS.toHours(diff);
         if (diffHours < 24) {
             return diffHours + " hours ago";
         }
-        int diffInDays = (int) diff / (1000 * 60 * 60 * 24);
+        long diffInDays = TimeUnit.MILLISECONDS.toDays(diff);
         return diffInDays + " days ago";
     }
 
@@ -246,8 +249,10 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         editor.commit();
         if (existingShares == 0) {
             textViewSharesOwned.setText("You have 0 shares of " + ticker + ".");
+            textViewMarketValue.setText("Start Trading!");
         } else {
             textViewSharesOwned.setText("Shares Owned: " + existingShares);
+            textViewMarketValue.setText("Market Value: " + String.format("%.2f", existingShares * stockItem.getLast()));
         }
         tradeDialog.dismiss();
 
@@ -405,7 +410,6 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                     textViewName.setText(name);
                     TextView textViewLast = findViewById(R.id.text_view_last_detail);
                     textViewLast.setText("$" + df.format(last));
-                    TextView textViewMarketValue = findViewById(R.id.text_view_market_value);
                     if (existingShares == 0) {
                         textViewMarketValue.setText("Start Trading!");
                     } else {
@@ -436,14 +440,14 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                     if(bid.equals("null")){
                         bid = "0.0";
                     }
-                    textViewBid.setText("Bid Price: " + df.format(Double.parseDouble(bid)));
+                    textViewBid.setText("Bid Price: " + String.format("%,.2f", Double.parseDouble(bid)));
                     TextView textViewOpen = findViewById(R.id.tv_open);
                     textViewOpen.setText("Open Price: " + df.format(Double.parseDouble(open)));
                     TextView textViewMid = findViewById(R.id.tv_mid);
                     if(mid.equals("null")){
                         mid = "0.0";
                     }
-                    textViewMid.setText("Mid: " + df.format(Double.parseDouble(mid)));
+                    textViewMid.setText("Mid: " + String.format("%,.2f", Double.parseDouble(mid)));
                     TextView textViewHigh = findViewById(R.id.tv_high);
                     textViewHigh.setText("High: " + df.format(Double.parseDouble(high)));
                     TextView textViewVolume = findViewById(R.id.tv_volume);

@@ -14,9 +14,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:paddingLeft="8dp"
+        android:paddingLeft="15dp"
         android:paddingBottom="8dp"
-        android:textColor="@color/date"
+        android:textColor="@color/grey"
         android:textSize="20dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/recycler_view"
@@ -50,7 +50,7 @@
         android:linksClickable="true"
         android:text="Powered by tiingo"
         android:textColorHighlight="#00FFFFFF"
-        android:textColorLink="@color/date"
+        android:textColorLink="@color/grey"
         android:textStyle="italic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
@@ -66,7 +66,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/text_view_main_date" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/text_view_fetch"
