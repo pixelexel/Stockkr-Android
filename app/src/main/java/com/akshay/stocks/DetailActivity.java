@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -384,10 +385,11 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                     String bid = stock.getString("bidPrice");
 
                     double last = Double.parseDouble(stock.getString("last"));
-                    String change = String.format("%.2f", (last - Double.parseDouble(close)));
 
                     stockItem = new StockItemDetail(name, ticker, last);
+                    DecimalFormat df = new DecimalFormat("#,###.00");
 
+                    String change = df.format(last - Double.parseDouble(close));
                     TextView textViewChange = findViewById(R.id.text_view_change);
                     if (last - Double.parseDouble(close) > 0) {
                         textViewChange.setText("+$" + Math.abs(Double.parseDouble(change)));
@@ -401,7 +403,7 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
 
                     textViewName.setText(name);
                     TextView textViewLast = findViewById(R.id.text_view_last_detail);
-                    textViewLast.setText("$" + String.format("%.2f", last));
+                    textViewLast.setText("$" + df.format(last));
                     TextView textViewMarketValue = findViewById(R.id.text_view_market_value);
                     if (existingShares == 0) {
                         textViewMarketValue.setText("Start Trading!");
@@ -426,25 +428,25 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
                     });
 
                     TextView textViewCurrent = findViewById(R.id.tv_current);
-                    textViewCurrent.setText("Current Price: " + String.valueOf(last));
+                    textViewCurrent.setText("Current Price: " + df.format(last));
                     TextView textViewLow = findViewById(R.id.tv_low);
-                    textViewLow.setText("Low: " + low);
+                    textViewLow.setText("Low: " + df.format(Double.parseDouble(low)));
                     TextView textViewBid = findViewById(R.id.tv_bid);
                     if(bid.equals("null")){
                         bid = "0.0";
                     }
-                    textViewBid.setText("Bid Price: " + bid);
+                    textViewBid.setText("Bid Price: " + df.format(Double.parseDouble(bid)));
                     TextView textViewOpen = findViewById(R.id.tv_open);
-                    textViewOpen.setText("Open Price: " + open);
+                    textViewOpen.setText("Open Price: " + df.format(Double.parseDouble(open)));
                     TextView textViewMid = findViewById(R.id.tv_mid);
                     if(mid.equals("null")){
                         mid = "0.0";
                     }
-                    textViewMid.setText("Mid: " + mid);
+                    textViewMid.setText("Mid: " + df.format(Double.parseDouble(mid)));
                     TextView textViewHigh = findViewById(R.id.tv_high);
-                    textViewHigh.setText("High: " + high);
+                    textViewHigh.setText("High: " + df.format(Double.parseDouble(high)));
                     TextView textViewVolume = findViewById(R.id.tv_volume);
-                    textViewVolume.setText("Volume: " + volume);
+                    textViewVolume.setText("Volume: " + df.format(Double.parseDouble(volume)));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
