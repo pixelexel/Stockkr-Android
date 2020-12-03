@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
@@ -66,7 +67,7 @@ final class StockSection extends Section {
 
         itemHolder.mTextViewTicker.setText(stock.getTicker());
         itemHolder.mTextViewName.setText(stock.getName());
-        itemHolder.mTextViewLast.setText(String.valueOf(stock.getLast()));
+        itemHolder.mTextViewLast.setText(String.format("%.2f", stock.getLast()));
         itemHolder.mTextViewChange.setText(String.format("%.2f", Math.abs(stock.getChange())));
 
         if (stock.getChange() > 0) {

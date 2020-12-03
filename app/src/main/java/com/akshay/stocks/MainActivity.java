@@ -46,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -187,14 +188,14 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                         try {
                             loadStockList();
                             updateLists(false);
-                            Log.d(TAG, "run: Refresh");
+                            Log.d(TAG, "run: Refresh - Fetched new values!");
                         } catch (Exception e) {
                         }
                     }
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, 150000000, 150000000);
+        timer.schedule(doAsynchronousTask, 15000000, 15000000);
     }
 
     private void makeSearchCall(String text) {
