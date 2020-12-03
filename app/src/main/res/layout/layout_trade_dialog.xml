@@ -50,6 +50,7 @@
         android:textSize="30dp"
         android:textCursorDrawable="@drawable/purple_cursor"
         android:inputType="number"
+        android:imeOptions="actionDone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_view_trade_dialog_header" />
 

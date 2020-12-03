@@ -2,6 +2,7 @@ package com.akshay.stocks;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -92,6 +93,10 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         spinner = (ProgressBar) findViewById(R.id.progressBar1);
         textViewFetch = (TextView) findViewById(R.id.text_view_fetch);
         detailsLayout = (ConstraintLayout) findViewById(R.id.hide_details);
@@ -115,8 +120,8 @@ public class DetailActivity extends AppCompatActivity implements TradeDialog.Tra
         parseDetails(ticker);
 
         //back
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
+//        ActionBar actionBar = getSupportActionBar();
+//        actionBar.setHomeButtonEnabled(true);
 
         //Trade
         textViewMarketValue = findViewById(R.id.text_view_market_value);
