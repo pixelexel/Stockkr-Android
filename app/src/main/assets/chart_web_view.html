@@ -15,7 +15,7 @@
       let ticker = urlParams.get("ticker");
       ticker = ticker.toUpperCase();
       fetch(
-        "http://9tqatssas.us-east-1.elasticbeanstalk.com/api/charts2?ticker=" +
+        "https://stockkr-server.akshayx.xyz/.netlify/functions/api/charts2?ticker=" +
           ticker
       )
         .then((response) => response.json())

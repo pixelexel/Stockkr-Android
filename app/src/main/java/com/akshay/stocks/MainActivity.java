@@ -62,7 +62,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 public class MainActivity extends AppCompatActivity implements StockSection.ClickListener {
 
-    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
+//    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "MainActivity";
     public static final String EXTRA_TICKER = "ticker";
     private List<StockItem> mPortfolioList;
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 });
             }
         };
-        timer.schedule(doAsynchronousTask, 15000, 15000);
+        timer.schedule(doAsynchronousTask, 120000, 120000);
     }
 
     private void makeSearchCall(String text) {
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 e.printStackTrace();
             }
         }
-        String watchListUrl = SERVER + "/api/stocklist?" + watchListParams.substring(1);
+        String watchListUrl = getString(R.string.SERVER) + "/stocklist?" + watchListParams.substring(1);
 
         JsonObjectRequest request2 = new JsonObjectRequest(Request.Method.GET, watchListUrl, null, new Response.Listener<JSONObject>() {
             @Override
@@ -454,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 e.printStackTrace();
             }
         }
-        String portfolioListUrl = SERVER + "/api/stocklist?" + portfolioListParams.substring(1);
+        String portfolioListUrl = getString(R.string.SERVER) + "/stocklist?" + portfolioListParams.substring(1);
 
         JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, portfolioListUrl, null, new Response.Listener<JSONObject>() {
             @Override
@@ -533,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 e.printStackTrace();
             }
         }
-        String portfolioListUrl = SERVER + "/api/stocklist?" + portfolioListParams.substring(1);
+        String portfolioListUrl = getString(R.string.SERVER) + "/stocklist?" + portfolioListParams.substring(1);
         Log.d(TAG, "getStockList: URL " + portfolioListUrl);
 
         JsonObjectRequest request1 = new JsonObjectRequest(Request.Method.GET, portfolioListUrl, null, new Response.Listener<JSONObject>() {
@@ -613,7 +613,7 @@ public class MainActivity extends AppCompatActivity implements StockSection.Clic
                 e.printStackTrace();
             }
         }
-        String watchListUrl = SERVER + "/api/stocklist?" + watchListParams.substring(1);
+        String watchListUrl = getString(R.string.SERVER) + "/stocklist?" + watchListParams.substring(1);
 
         JsonObjectRequest request2 = new JsonObjectRequest(Request.Method.GET, watchListUrl, null, new Response.Listener<JSONObject>() {
             @Override
