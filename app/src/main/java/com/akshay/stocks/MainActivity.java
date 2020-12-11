@@ -62,7 +62,6 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 public class MainActivity extends AppCompatActivity implements StockSection.ClickListener {
 
-//    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "MainActivity";
     public static final String EXTRA_TICKER = "ticker";
     private List<StockItem> mPortfolioList;

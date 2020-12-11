@@ -53,7 +53,6 @@ import static java.lang.Integer.parseInt;
 
 public class DetailActivity extends AppCompatActivity implements TradeDialog.TradeDialogListener, SuccessDialog.SuccessDialogListener, NewsDialog.NewsDialogListener, NewsAdapter.onNewsItemClickListener {
 
-//    private String SERVER = "http://9tqatssas.us-east-1.elasticbeanstalk.com";
     private static final String TAG = "DetailActivity";
 
     private RequestQueue mRequestQueue;
